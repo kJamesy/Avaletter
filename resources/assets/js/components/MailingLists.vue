@@ -1,0 +1,135 @@
+<template xmlns="http://www.w3.org/1999/XSL/Transform">
+    <div class="mailing-lists">
+        <form v-on:submit='addMList'>
+            <div class="form-group">
+                <input class="form-control" placeholder="New Mailing List" v-model="newMList.name">
+            </div>
+            <!--<button class="btn btn-default">Create</button>-->
+        </form>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name <button @click="changeSort('name')"><i class="fa {{ getSortIcon('name') }}"></i></button></th>
+                    <th>Created <button @click="changeSort('created_at')"><i class="fa {{ getSortIcon('created_at') }}"></i></button></th>
+                    <th>Updated <button @click="changeSort('updated_at')"><i class="fa {{ getSortIcon('updated_at') }}"></i></button></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="mList in mLists | orderBy orderAttr orderToggle">
+                    <td>{{ mList.name }}</td>
+                    <td>{{ mList.created_at }}</td>
+                    <td>{{ mList.updated_at }}</td>
+                </tr>
+            </tbody>
+        </table>
+        <vue-progress-bar></vue-progress-bar>
+        <pagination :pagination="pagination" :callback="fetchMLists" :offset="5"></pagination>
+    </div>
+    <!--{{ mLists | json }}-->
+</template>
+
+<script>
+    export default {
+        data: function() {
+            return {
+                newMList: { name: ''},
+                mLists: [],
+                orderToggle: 1,
+                orderAttr: 'name',
+                pagination: {
+                    total: 0,
+                    per_page: 10,
+                    current_page: 1,
+                    last_page: 0,
+                    from: 1,
+                    to: 10
+                }
+            }
+        },
+        ready: function () {
+            this.fetchMLists();
+            this.resourceUrl = 'mailing-lists';
+        },
+        methods: {
+            fetchMLists: function (orderAttr, orderToggle) {
+                var orderBy = orderAttr ? orderAttr : this.orderAttr;
+                var order = orderToggle ? orderToggle : this.orderToggle;
+                var progress = this.$Progress;
+                var mLists = [];
+
+                progress.start();
+                let params = {
+                    perPage: this.pagination.per_page,
+                    page: this.pagination.current_page,
+                    orderBy: orderBy,
+                    order: ( order == 1 ) ? 'asc' : 'desc'
+                };
+                this.$http.get(this.resourceUrl, {params : params}).then(function(response) {
+                    if ( response.data && response.data.data && response.data.data.length ) {
+                        this.$set('mLists', response.data.data);
+                        this.orderAttr = orderBy;
+                        this.orderToggle = order;
+
+                        var pagination = {
+                            total: response.data.total,
+                            per_page: response.data.per_page,
+                            current_page: response.data.current_page,
+                            last_page: response.data.last_page,
+                            from: response.data.from,
+                            to: response.data.to
+                        };
+                        this.$set('pagination', pagination);
+                        progress.finish();
+                    }
+                }, function(error) {
+                    swal('An Error Occurred', 'Please refresh the page and try again.', 'error');
+                    progress.fail();
+                });
+            },
+            changeSort: function(attr) {
+                var orderToggle = ( this.orderAttr == attr ) ? this.orderToggle * -1 : 1;
+                this.fetchMLists(attr, orderToggle);
+            },
+            getSortIcon: function(attr) {
+                var icon = 'fa-sort';
+                if ( this.orderAttr == attr )
+                    icon = ( this.orderToggle == 1 ) ? 'fa-sort-asc' : 'fa-sort-desc';
+                return icon;
+            },
+            addMList: function (e) {
+                e.preventDefault();
+                var progress = this.$Progress;
+                var newMListName = this.newMList.name.trim();
+
+                if ( newMListName ) {
+                    progress.start();
+                    this.newMList.name = newMListName;
+                    var newMList = this.newMList;
+
+                    this.$http.post(this.resourceUrl, newMList).then(function(response) {
+                        swal({
+                            title: "Success",
+                            text: 'Mailing List created',
+                            type: 'success',
+                            animation: 'slide-from-bottom',
+                            timer: 3000
+                        });
+
+                        newMList = { name: '' };
+                        progress.finish();
+                        this.fetchMLists();
+                    }, function(error) {
+                        if ( error.status && error.status == 422 && error.data.name ) {
+                            swal('An Error Occurred', error.data.name, 'error');
+                        }
+                        else {
+                            swal('An Error Occurred', 'Please refresh the page and try again.', 'error');
+                        }
+                        progress.fail();
+                    });
+                }
+            }
+        }
+    }
+</script>
