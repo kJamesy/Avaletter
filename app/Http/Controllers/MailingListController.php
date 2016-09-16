@@ -16,7 +16,7 @@ class MailingListController extends Controller
     {
         $this->middleware('auth');
         $this->rules = MailingList::$rules;
-        $this->paginate = 10;
+        $this->paginate = 1000;
         $this->orderByFields = ['name', 'created_at', 'updated_at'];
         $this->orderCriteria = ['asc', 'desc'];
     }

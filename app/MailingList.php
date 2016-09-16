@@ -25,7 +25,7 @@ class MailingList extends Model
      * @param int $paginate
      * @return mixed
      */
-    public static function getMailingLists($orderBy = 'created_at', $order = 'desc', $paginate = 10)
+    public static function getMailingLists($orderBy = 'created_at', $order = 'desc', $paginate = 1000)
     {
         return static::with('subscribers')->orderBy($orderBy, $order)->paginate($paginate);
     }

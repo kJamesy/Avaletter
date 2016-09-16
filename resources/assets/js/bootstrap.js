@@ -48,3 +48,9 @@ Vue.http.interceptors.push((request, next) => {
  * Sweetalert
  */
 require('sweetalert');
+
+/**
+ * Moment
+ * @type {hooks}
+ */
+window.moment = require('moment');

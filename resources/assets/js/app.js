@@ -12,7 +12,7 @@ require('./bootstrap');
  * the body of the page. From here, you may begin adding components to
  * the application, or feel free to tweak this setup for your needs.
  */
-import VueProgressBar from 'vue-progressbar'
+import VueProgressBar from 'vue-progressbar';
 
 Vue.use(VueProgressBar, {
     color: 'rgb(143, 255, 199)',
