@@ -66,6 +66,7 @@
         ready: function () {
             this.fetchMLists();
             this.resourceUrl = 'mailing-lists';
+
         },
         methods: {
             fetchMLists: function (orderAttr, orderToggle) {
@@ -99,6 +100,10 @@
                             to: response.data.to
                         };
                         this.$set('pagination', pagination);
+                        progress.finish();
+                    }
+                    else {
+                        swal('Computer says no', "You don't have any mailing lists yet. Please add some", 'error');
                         progress.finish();
                     }
                 }, function(error) {
@@ -135,7 +140,7 @@
                             timer: 3000
                         });
 
-                        newMList = { name: '' };
+                        this.newMList = { name: '' };
                         progress.finish();
                         this.fetchMLists();
                     }, function(error) {

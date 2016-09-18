@@ -20,6 +20,13 @@ window.Vue = require('vue');
 require('vue-resource');
 
 /**
+ * Vue Router
+ * @type {Router}
+ */
+window.VueRouter = require('vue-router');
+Vue.use(VueRouter);
+
+/**
  * We'll register a HTTP interceptor to attach the "CSRF" header to each of
  * the outgoing requests issued by this application. The CSRF middleware
  * included with Laravel will automatically verify the header's value.
