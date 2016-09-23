@@ -26,21 +26,21 @@
 
         <table class="table">
             <thead>
-                <tr>
-                    <th>Name <button @click="changeSort('name')"><i class="fa {{ getSortIcon('name') }}"></i></button></th>
-                    <th>Created <button @click="changeSort('created_at')"><i class="fa {{ getSortIcon('created_at') }}"></i></button></th>
-                    <th>Updated <button @click="changeSort('updated_at')"><i class="fa {{ getSortIcon('updated_at') }}"></i></button></th>
-                    <th colspan="2"></th>
-                </tr>
+            <tr>
+                <th>Name <button @click="changeSort('name')"><i class="fa {{ getSortIcon('name') }}"></i></button></th>
+                <th>Created <button @click="changeSort('created_at')"><i class="fa {{ getSortIcon('created_at') }}"></i></button></th>
+                <th>Updated <button @click="changeSort('updated_at')"><i class="fa {{ getSortIcon('updated_at') }}"></i></button></th>
+                <th colspan="2"></th>
+            </tr>
             </thead>
             <tbody>
-                <tr v-for="mList in mLists | orderBy orderAttr orderToggle">
-                    <td>{{ mList.name }}</td>
-                    <td>{{ mList.created_at | localTime }}</td>
-                    <td>{{ mList.updated_at | localTime }}</td>
-                    <td><i class="fa fa-pencil-square-o btn btn-default btn-xs" @click="fetchMList(mList)"></i></td>
-                    <td><i class="fa fa-times btn btn-danger btn-xs" @click="deleteMList(mList)"></i></td>
-                </tr>
+            <tr v-for="mList in mLists | orderBy orderAttr orderToggle">
+                <td>{{ mList.name }}</td>
+                <td>{{ mList.created_at | localTime }}</td>
+                <td>{{ mList.updated_at | localTime }}</td>
+                <td><i class="fa fa-pencil-square-o btn btn-default btn-xs" @click="fetchMList(mList)"></i></td>
+                <td><i class="fa fa-times btn btn-danger btn-xs" @click="deleteMList(mList)"></i></td>
+            </tr>
             </tbody>
         </table>
         <pagination :pagination="pagination" :callback="fetchMLists" :offset="5" v-show="! hidePagination()"></pagination>
@@ -78,6 +78,7 @@
         ready: function () {
             this.fetchMLists();
             this.resourceUrl = 'mailing-lists';
+
         },
         methods: {
             fetchMLists: function (orderAttr, orderToggle) {
@@ -111,6 +112,10 @@
                             to: response.data.to
                         };
                         this.$set('pagination', pagination);
+                        progress.finish();
+                    }
+                    else {
+                        swal('Computer says no', "You don't have any mailing lists yet. Please add some", 'error');
                         progress.finish();
                     }
                 }, function(error) {
@@ -223,43 +228,43 @@
                 var progress = this.$Progress;
 
                 swal({
-                    title: "Delete mailing list: " + mList.name + "?",
-                    text: "You will not be able to recover this mailing list. Subscribers won't be deleted.",
-                    type: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#DD6B55",
-                    confirmButtonText: "Delete!",
-                    closeOnConfirm: false
-                },
-                function() {
-                    progress.start();
+                            title: "Delete mailing list: " + mList.name + "?",
+                            text: "You will not be able to recover this mailing list. Subscribers won't be deleted.",
+                            type: "warning",
+                            showCancelButton: true,
+                            confirmButtonColor: "#DD6B55",
+                            confirmButtonText: "Delete!",
+                            closeOnConfirm: false
+                        },
+                        function() {
+                            progress.start();
 
-                    that.$http.delete(that.resourceUrl + '/' + mList.id).then(function(response) {
-                        if ( response.data && response.data.success ) {
-                            swal({
-                                title: "Success",
-                                text: response.data.success,
-                                type: 'success',
-                                animation: 'slide-from-bottom',
-                                timer: 3000
+                            that.$http.delete(that.resourceUrl + '/' + mList.id).then(function(response) {
+                                if ( response.data && response.data.success ) {
+                                    swal({
+                                        title: "Success",
+                                        text: response.data.success,
+                                        type: 'success',
+                                        animation: 'slide-from-bottom',
+                                        timer: 3000
+                                    });
+
+                                    progress.finish();
+                                    that.fetchMLists();
+                                }
+                            }, function(error) {
+                                if ( error.data && error.data.error )
+                                    swal('An Error Occurred', error.data.error, 'error');
+                                else
+                                    swal('An Error Occurred', 'Please refresh the page and try again.', 'error');
+                                progress.fail();
                             });
-
-                            progress.finish();
-                            that.fetchMLists();
-                        }
-                    }, function(error) {
-                        if ( error.data && error.data.error )
-                            swal('An Error Occurred', error.data.error, 'error');
-                        else
-                            swal('An Error Occurred', 'Please refresh the page and try again.', 'error');
-                        progress.fail();
-                    });
-                });
+                        });
             }
         },
         filters: {
             localTime: function (date) {
-               return moment(date + ' Z', 'YYYY-MM-DD HH:mm:ss Z', true).format('D MMM YYYY HH:mm');
+                return moment(date + ' Z', 'YYYY-MM-DD HH:mm:ss Z', true).format('D MMM YYYY HH:mm');
             }
         }
     }
