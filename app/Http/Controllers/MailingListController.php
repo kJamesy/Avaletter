@@ -73,10 +73,7 @@ class MailingListController extends Controller
      */
     public function show($id)
     {
-        if ( $mList = MailingList::find($id) )
-            return $mList;
-        else
-            return response()->json(['error' => 'Mailing list does not exist']);
+        //
     }
 
     /**
@@ -99,19 +96,7 @@ class MailingListController extends Controller
      */
     public function update(Request $request, $id)
     {
-        if ( $mList = MailingList::find($id) ) {
-
-            if ( $mList->name != trim($request->name) ) {
-                $this->validate($request, $this->rules);
-
-                $mList->name = trim($request->name);
-                $mList->save();
-            }
-
-            return $mList;
-        }
-        else
-            return response()->json(['error' => 'Mailing list does not exist']);
+        //
     }
 
     /**
@@ -122,11 +107,6 @@ class MailingListController extends Controller
      */
     public function destroy($id)
     {
-       if ( $mList = MailingList::find($id) ) {
-           $mList->delete();
-           return response()->json(['success' => 'Mailing list successfully deleted']);
-       }
-       else
-           return response()->json(['error' => 'Mailing list does not exist']);
+        //
     }
 }
