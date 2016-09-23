@@ -78,7 +78,6 @@
         ready: function () {
             this.fetchMLists();
             this.resourceUrl = 'mailing-lists';
-
         },
         methods: {
             fetchMLists: function (orderAttr, orderToggle) {
@@ -227,38 +226,37 @@
                 var progress = this.$Progress;
 
                 swal({
-                            title: "Delete mailing list: " + mList.name + "?",
-                            text: "You will not be able to recover this mailing list. Subscribers won't be deleted.",
-                            type: "warning",
-                            showCancelButton: true,
-                            confirmButtonColor: "#DD6B55",
-                            confirmButtonText: "Delete!",
-                            closeOnConfirm: false
-                        },
-                        function() {
-                            progress.start();
+                        title: "Delete mailing list: " + mList.name + "?",
+                        text: "You will not be able to recover this mailing list. Subscribers won't be deleted.",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#DD6B55",
+                        confirmButtonText: "Delete!",
+                        closeOnConfirm: false
+                    }, function() {
+                        progress.start();
 
-                            that.$http.delete(that.resourceUrl + '/' + mList.id).then(function(response) {
-                                if ( response.data && response.data.success ) {
-                                    swal({
-                                        title: "Success",
-                                        text: response.data.success,
-                                        type: 'success',
-                                        animation: 'slide-from-bottom',
-                                        timer: 3000
-                                    });
+                        that.$http.delete(that.resourceUrl + '/' + mList.id).then(function(response) {
+                            if ( response.data && response.data.success ) {
+                                swal({
+                                    title: "Success",
+                                    text: response.data.success,
+                                    type: 'success',
+                                    animation: 'slide-from-bottom',
+                                    timer: 3000
+                                });
 
-                                    progress.finish();
-                                    that.fetchMLists();
-                                }
-                            }, function(error) {
-                                if ( error.data && error.data.error )
-                                    swal('An Error Occurred', error.data.error, 'error');
-                                else
-                                    swal('An Error Occurred', 'Please refresh the page and try again.', 'error');
-                                progress.fail();
-                            });
+                                progress.finish();
+                                that.fetchMLists();
+                            }
+                        }, function(error) {
+                            if ( error.data && error.data.error )
+                                swal('An Error Occurred', error.data.error, 'error');
+                            else
+                                swal('An Error Occurred', 'Please refresh the page and try again.', 'error');
+                            progress.fail();
                         });
+                    });
             }
         },
         filters: {
