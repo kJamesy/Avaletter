@@ -175,7 +175,6 @@
                     progress.start();
 
                     this.$http.get(this.resourceUrl + '/' + mList.id).then(function (response) {
-                        console.log(response);
                         if (response.data && response.status == 200) {
                             progress.finish();
                             this.editingMList = true;
