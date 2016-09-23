@@ -1,13 +1,13 @@
 <template xmlns="http://www.w3.org/1999/XSL/Transform" >
     <vue-progress-bar></vue-progress-bar>
     <div class="mailing-lists" >
-        <form v-on:submit='addMList' v-if='! editingMList'>
+        <form v-on:submit='addMList' v-if='! editingMList' class='animated flipInX'>
             <div class="form-group">
                 <input class="form-control" placeholder="New Mailing List" v-model="newMList.name">
             </div>
             <!--<button class="btn btn-default">Create</button>-->
         </form>
-        <form v-on:submit='updateMList' v-if='editingMList'>
+        <form v-on:submit='updateMList' v-if='editingMList' class='animated flipInX'>
             <div class="form-group">
                 <input class="form-control" placeholder="Mailing List" v-model="editMList.name">
             </div>

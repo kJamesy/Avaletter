@@ -29,6 +29,7 @@ elixir(function(mix) {
             './public/css/app.css',
             './node_modules/sweetalert/dist/sweetalert.css',
             // './node_modules/sweetalert/themes/twitter/twitter.css'
+            './node_modules/animate.css/animate.min.css'
         ], './public/css/app.css')
         .webpack('app.js');
 });
