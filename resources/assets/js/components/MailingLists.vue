@@ -1,19 +1,15 @@
 <template xmlns="http://www.w3.org/1999/XSL/Transform" >
-    <vue-progress-bar></vue-progress-bar>
     <div class="mailing-lists" >
-        <form v-on:submit='addMList' v-if='! editingMList' class='animated flipInY'>
+        <form v-on:submit.prevent='addMList' v-if='! editingMList' class='animated bounce'>
             <div class="form-group">
                 <input class="form-control" placeholder="New Mailing List" v-model="newMList.name">
             </div>
-            <!--<button class="btn btn-default">Create</button>-->
         </form>
-        <form v-on:submit='updateMList' v-if='editingMList' class='animated bounce'>
+        <form v-on:submit.prevent='updateMList' v-if='editingMList' v-on:keyup.esc="editingMList = ! editingMList" class='animated bounce'>
             <div class="form-group">
                 <input class="form-control" placeholder="Mailing List" v-model="editMList.name">
             </div>
-            <!--<button class="btn btn-default">Create</button>-->
         </form>
-
 
         <div style="float: right; margin: 20px 0;">
             <label for="records_per_page">Records Per Page</label>
@@ -23,29 +19,27 @@
                 </option>
             </select>
         </div>
-
         <table class="table">
             <thead>
-            <tr>
-                <th>Name <button @click="changeSort('name')"><i class="fa {{ getSortIcon('name') }}"></i></button></th>
-                <th>Created <button @click="changeSort('created_at')"><i class="fa {{ getSortIcon('created_at') }}"></i></button></th>
-                <th>Updated <button @click="changeSort('updated_at')"><i class="fa {{ getSortIcon('updated_at') }}"></i></button></th>
-                <th colspan="2"></th>
-            </tr>
+                <tr>
+                    <th>Name <button v-on:click="changeSort('name')"><i v-bind:class="'fa ' + getSortIcon('name')"></i></button></th>
+                    <th>Created <button v-on:click="changeSort('created_at')"><i v-bind:class="'fa ' + getSortIcon('created_at')"></i></button></th>
+                    <th>Updated <button v-on:click="changeSort('updated_at')"><i v-bind:class="'fa ' + getSortIcon('updated_at')"></i></button></th>
+                    <th colspan="2"></th>
+                </tr>
             </thead>
             <tbody>
-            <tr v-for="mList in mLists | orderBy orderAttr orderToggle">
-                <td>{{ mList.name }}</td>
-                <td>{{ mList.created_at | localTime }}</td>
-                <td>{{ mList.updated_at | localTime }}</td>
-                <td><i class="fa fa-pencil-square-o btn btn-default btn-xs" @click="fetchMList(mList)"></i></td>
-                <td><i class="fa fa-times btn btn-danger btn-xs" @click="deleteMList(mList)"></i></td>
-            </tr>
+                <tr v-for="mList in orderedMLists">
+                    <td>{{ mList.name }}</td>
+                    <td>{{ mList.created_at | localTime }}</td>
+                    <td>{{ mList.updated_at | localTime }}</td>
+                    <td><i class="fa fa-pencil-square-o btn btn-default btn-xs" v-on:click="fetchMList(mList)"></i></td>
+                    <td><i class="fa fa-times btn btn-danger btn-xs" v-on:click="deleteMList(mList)"></i></td>
+                </tr>
             </tbody>
         </table>
         <pagination :pagination="pagination" :callback="fetchMLists" :offset="5" v-show="! hidePagination()"></pagination>
     </div>
-    <!--{{ mLists | json }}-->
 </template>
 
 <script>
@@ -75,34 +69,41 @@
                 editMList: {}
             }
         },
-        ready: function () {
-            this.fetchMLists();
-            this.resourceUrl = 'mailing-lists';
+        mounted: function() {
+            this.$nextTick(function() {
+                this.fetchMLists();
+                this.resourceUrl = 'mailing-lists';
+            });
+        },
+        computed: {
+            orderedMLists: function() {
+                return _.orderBy(this.mLists, [this.orderAttr], [this.orderToggle]);
+            }
         },
         methods: {
             fetchMLists: function (orderAttr, orderToggle) {
-                var orderBy = orderAttr ? orderAttr : this.orderAttr;
-                var order = orderToggle ? orderToggle : this.orderToggle;
-                var progress = this.$Progress;
-                var mLists = [];
-                var lastPage = Math.ceil(this.pagination.total / this.pagination.per_page);
+                var vm = this;
+                var orderBy = orderAttr ? orderAttr : vm.orderAttr;
+                var order = orderToggle ? orderToggle : vm.orderToggle;
+                var progress = vm.$Progress;
+                var lastPage = Math.ceil(vm.pagination.total / vm.pagination.per_page);
 
                 let params = {
-                    perPage: this.pagination.per_page,
-                    page: ( lastPage < this.pagination.last_page ) ? lastPage : this.pagination.current_page,
+                    perPage: vm.pagination.per_page,
+                    page: ( lastPage < vm.pagination.last_page ) ? lastPage : vm.pagination.current_page,
                     orderBy: orderBy,
                     order: ( order == 1 ) ? 'asc' : 'desc'
                 };
 
-                progress.start();
+//                progress.start();
 
-                this.$http.get(this.resourceUrl, {params : params}).then(function(response) {
+                vm.$http.get(vm.resourceUrl, {params : params}).then(function(response) {
                     if ( response.data && response.data.data && response.data.data.length ) {
-                        this.$set('mLists', response.data.data);
-                        this.orderAttr = orderBy;
-                        this.orderToggle = order;
+                        vm.mLists = response.data.data;
+                        vm.orderAttr = orderBy;
+                        vm.orderToggle = order;
 
-                        var pagination = {
+                        vm.pagination = {
                             total: response.data.total,
                             per_page: response.data.per_page,
                             current_page: response.data.current_page,
@@ -110,16 +111,15 @@
                             from: response.data.from,
                             to: response.data.to
                         };
-                        this.$set('pagination', pagination);
-                        progress.finish();
+//                        progress.finish();
                     }
                     else {
                         swal('Computer says no', "You don't have any mailing lists yet. Please add some", 'error');
-                        progress.finish();
+//                        progress.finish();
                     }
                 }, function(error) {
                     swal('An Error Occurred', 'Please refresh the page and try again.', 'error');
-                    progress.fail();
+//                    progress.fail();
                 });
             },
             changeSort: function(attr) {
@@ -132,17 +132,16 @@
                     icon = ( this.orderToggle == 1 ) ? 'fa-sort-asc' : 'fa-sort-desc';
                 return icon;
             },
-            addMList: function (e) {
-                e.preventDefault();
-                var that = this;
-                var progress = that.$Progress;
-                var newMListName = that.newMList.name.trim();
+            addMList: function () {
+                var vm = this;
+                var progress = vm.$Progress;
+                var newMListName = vm.newMList.name.trim();
 
                 if ( newMListName ) {
-                    progress.start();
-                    that.newMList.name = newMListName;
+//                    progress.start();
+                    vm.newMList.name = newMListName;
 
-                    that.$http.post(that.resourceUrl, that.newMList).then(function(response) {
+                    vm.$http.post(vm.resourceUrl, vm.newMList).then(function(response) {
                         swal({
                             title: "Success",
                             text: 'Mailing List created',
@@ -151,9 +150,9 @@
                             timer: 3000
                         });
 
-                        that.newMList = { name: '' };
-                        progress.finish();
-                        that.fetchMLists();
+                        vm.newMList = { name: '' };
+//                        progress.finish();
+                        vm.fetchMLists();
                     }, function(error) {
                         if ( error.status && error.status == 422 && error.data.name ) {
                             swal('An Error Occurred', error.data.name, 'error');
@@ -161,7 +160,7 @@
                         else {
                             swal('An Error Occurred', 'Please refresh the page and try again.', 'error');
                         }
-                        progress.fail();
+//                        progress.fail();
                     });
                 }
             },
@@ -169,35 +168,35 @@
                 return ( Math.ceil(this.pagination.total / this.pagination.per_page) == 1 )
             },
             fetchMList: function(mList) {
+                var vm = this;
                 if ( mList && mList.id ) {
-                    var progress = this.$Progress;
-                    progress.start();
+                    var progress = vm.$Progress;
+//                    progress.start();
 
-                    this.$http.get(this.resourceUrl + '/' + mList.id).then(function (response) {
+                    vm.$http.get(vm.resourceUrl + '/' + mList.id).then(function (response) {
                         if (response.data && response.status == 200) {
-                            progress.finish();
-                            this.editingMList = true;
-                            this.editMList = response.data;
+//                            progress.finish();
+                            vm.editingMList = true;
+                            vm.editMList = response.data;
                         }
                     }, function (error) {
                         swal('An Error Occurred', 'Please refresh the page and try again.', 'error');
-                        progress.fail();
+//                        progress.fail();
                     });
                 }
                 else
                     swal('An Error Occurred', 'Please refresh the page and try again.', 'error');
             },
-            updateMList: function(e) {
-                e.preventDefault();
-                var that = this;
-                var progress = that.$Progress;
-                var editMListName = that.editMList.name.trim();
+            updateMList: function() {
+                var vm = this;
+                var progress = vm.$Progress;
+                var editMListName = vm.editMList.name.trim();
 
                 if ( editMListName ) {
-                    progress.start();
-                    that.editMList.name = editMListName;
+//                    progress.start();
+                    vm.editMList.name = editMListName;
 
-                    that.$http.put(that.resourceUrl + '/' + that.editMList.id, that.editMList).then(function(response) {
+                    vm.$http.put(vm.resourceUrl + '/' + vm.editMList.id, vm.editMList).then(function(response) {
                         swal({
                             title: "Success",
                             text: 'Mailing List updated',
@@ -206,10 +205,10 @@
                             timer: 3000
                         });
 
-                        that.editMList = {};
-                        that.editingMList = false;
-                        progress.finish();
-                        that.fetchMLists();
+                        vm.editMList = {};
+                        vm.editingMList = false;
+//                        progress.finish();
+                        vm.fetchMLists();
                     }, function(error) {
                         if ( error.status && error.status == 422 && error.data.name ) {
                             swal('An Error Occurred', error.data.name, 'error');
@@ -217,46 +216,46 @@
                         else {
                             swal('An Error Occurred', 'Please refresh the page and try again.', 'error');
                         }
-                        progress.fail();
+//                        progress.fail();
                     });
                 }
             },
             deleteMList: function(mList) {
-                var that = this;
+                var vm = this;
                 var progress = this.$Progress;
 
                 swal({
-                        title: "Delete mailing list: " + mList.name + "?",
-                        text: "You will not be able to recover this mailing list. Subscribers won't be deleted.",
-                        type: "warning",
-                        showCancelButton: true,
-                        confirmButtonColor: "#DD6B55",
-                        confirmButtonText: "Delete!",
-                        closeOnConfirm: false
-                    }, function() {
-                        progress.start();
+                    title: "Delete mailing list: " + mList.name + "?",
+                    text: "You will not be able to recover this mailing list. Subscribers won't be deleted.",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Delete!",
+                    closeOnConfirm: false
+                }, function() {
+//                    progress.start();
 
-                        that.$http.delete(that.resourceUrl + '/' + mList.id).then(function(response) {
-                            if ( response.data && response.data.success ) {
-                                swal({
-                                    title: "Success",
-                                    text: response.data.success,
-                                    type: 'success',
-                                    animation: 'slide-from-bottom',
-                                    timer: 3000
-                                });
+                    vm.$http.delete(vm.resourceUrl + '/' + mList.id).then(function(response) {
+                        if ( response.data && response.data.success ) {
+                            swal({
+                                title: "Success",
+                                text: response.data.success,
+                                type: 'success',
+                                animation: 'slide-from-bottom',
+                                timer: 3000
+                            });
 
-                                progress.finish();
-                                that.fetchMLists();
-                            }
-                        }, function(error) {
-                            if ( error.data && error.data.error )
-                                swal('An Error Occurred', error.data.error, 'error');
-                            else
-                                swal('An Error Occurred', 'Please refresh the page and try again.', 'error');
-                            progress.fail();
-                        });
+//                            progress.finish();
+                            vm.fetchMLists();
+                        }
+                    }, function(error) {
+                        if ( error.data && error.data.error )
+                            swal('An Error Occurred', error.data.error, 'error');
+                        else
+                            swal('An Error Occurred', 'Please refresh the page and try again.', 'error');
+//                        progress.fail();
                     });
+                });
             }
         },
         filters: {

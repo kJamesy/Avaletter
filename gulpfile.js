@@ -1,8 +1,6 @@
 
 const elixir = require('laravel-elixir');
-
-require('laravel-elixir-vue');
-require('laravel-elixir-webpack-official');
+require('laravel-elixir-vue-2');
 
 /*
  |--------------------------------------------------------------------------
@@ -14,14 +12,6 @@ require('laravel-elixir-webpack-official');
  | file for our application, as well as publishing vendor resources.
  |
  */
-
-// elixir.webpack.mergeConfig({
-//     module: {
-//         loaders: [
-//             {include: /\.json$/, loaders: ["json-loader"]}
-//         ]
-//     }
-// });
 
 elixir(function(mix) {
     mix.sass('app.scss')
