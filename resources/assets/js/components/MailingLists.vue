@@ -38,7 +38,7 @@
                 </tr>
             </tbody>
         </table>
-        <pagination :pagination="pagination" :callback="fetchMLists" :offset="5" v-show="! hidePagination()"></pagination>
+        <pagination :pagination="pagination" :callback="fetchMLists" :options="paginationOptions" v-show="! hidePagination()"></pagination>
     </div>
 </template>
 
@@ -57,6 +57,10 @@
                     last_page: 1,
                     from: 1,
                     to: 25
+                },
+                paginationOptions: {
+                    offset: 5,
+                    alwaysShowPrevNext: true
                 },
                 perPageOptions: [
                     { text: '10', value: 10},
