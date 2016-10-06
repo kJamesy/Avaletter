@@ -1,5 +1,6 @@
 <template xmlns="http://www.w3.org/1999/XSL/Transform" >
-    <div class="mailing-lists" >
+    <div class="mailing-lists">
+        <vue-progress-bar></vue-progress-bar>
         <form v-on:submit.prevent='addMList' v-if='! editingMList' class='animated bounce'>
             <div class="form-group">
                 <input class="form-control" placeholder="New Mailing List" v-model="newMList.name">
@@ -99,7 +100,7 @@
                     order: ( order == 1 ) ? 'asc' : 'desc'
                 };
 
-//                progress.start();
+                progress.start();
 
                 vm.$http.get(vm.resourceUrl, {params : params}).then(function(response) {
                     if ( response.data && response.data.data && response.data.data.length ) {
@@ -115,15 +116,15 @@
                             from: response.data.from,
                             to: response.data.to
                         };
-//                        progress.finish();
+                        progress.finish();
                     }
                     else {
                         swal('Computer says no', "You don't have any mailing lists yet. Please add some", 'error');
-//                        progress.finish();
+                        progress.finish();
                     }
                 }, function(error) {
                     swal('An Error Occurred', 'Please refresh the page and try again.', 'error');
-//                    progress.fail();
+                    progress.fail();
                 });
             },
             changeSort: function(attr) {
@@ -142,7 +143,7 @@
                 var newMListName = vm.newMList.name.trim();
 
                 if ( newMListName ) {
-//                    progress.start();
+                    progress.start();
                     vm.newMList.name = newMListName;
 
                     vm.$http.post(vm.resourceUrl, vm.newMList).then(function(response) {
@@ -155,7 +156,7 @@
                         });
 
                         vm.newMList = { name: '' };
-//                        progress.finish();
+                        progress.finish();
                         vm.fetchMLists();
                     }, function(error) {
                         if ( error.status && error.status == 422 && error.data.name ) {
@@ -164,7 +165,7 @@
                         else {
                             swal('An Error Occurred', 'Please refresh the page and try again.', 'error');
                         }
-//                        progress.fail();
+                        progress.fail();
                     });
                 }
             },
@@ -175,17 +176,17 @@
                 var vm = this;
                 if ( mList && mList.id ) {
                     var progress = vm.$Progress;
-//                    progress.start();
+                    progress.start();
 
                     vm.$http.get(vm.resourceUrl + '/' + mList.id).then(function (response) {
                         if (response.data && response.status == 200) {
-//                            progress.finish();
+                            progress.finish();
                             vm.editingMList = true;
                             vm.editMList = response.data;
                         }
                     }, function (error) {
                         swal('An Error Occurred', 'Please refresh the page and try again.', 'error');
-//                        progress.fail();
+                        progress.fail();
                     });
                 }
                 else
@@ -197,7 +198,7 @@
                 var editMListName = vm.editMList.name.trim();
 
                 if ( editMListName ) {
-//                    progress.start();
+                    progress.start();
                     vm.editMList.name = editMListName;
 
                     vm.$http.put(vm.resourceUrl + '/' + vm.editMList.id, vm.editMList).then(function(response) {
@@ -211,7 +212,7 @@
 
                         vm.editMList = {};
                         vm.editingMList = false;
-//                        progress.finish();
+                        progress.finish();
                         vm.fetchMLists();
                     }, function(error) {
                         if ( error.status && error.status == 422 && error.data.name ) {
@@ -220,7 +221,7 @@
                         else {
                             swal('An Error Occurred', 'Please refresh the page and try again.', 'error');
                         }
-//                        progress.fail();
+                        progress.fail();
                     });
                 }
             },
@@ -237,7 +238,7 @@
                     confirmButtonText: "Delete!",
                     closeOnConfirm: false
                 }, function() {
-//                    progress.start();
+                    progress.start();
 
                     vm.$http.delete(vm.resourceUrl + '/' + mList.id).then(function(response) {
                         if ( response.data && response.data.success ) {
@@ -249,7 +250,7 @@
                                 timer: 3000
                             });
 
-//                            progress.finish();
+                            progress.finish();
                             vm.fetchMLists();
                         }
                     }, function(error) {
@@ -257,7 +258,7 @@
                             swal('An Error Occurred', error.data.error, 'error');
                         else
                             swal('An Error Occurred', 'Please refresh the page and try again.', 'error');
-//                        progress.fail();
+                        progress.fail();
                     });
                 });
             }

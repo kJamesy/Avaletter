@@ -12,18 +12,17 @@ require('./bootstrap');
  * the body of the page. From here, you may begin adding components to
  * the application, or feel free to tweak this setup for your needs.
  */
-// import VueProgressBar from 'vue-progressbar';
-//
-// Vue.use(VueProgressBar, {
-//     color: 'rgb(143, 255, 199)',
-//     failedColor: 'red',
-//     height: '10px'
-// });
+import VueProgressBar from 'vue-progressbar';
+
+Vue.use(VueProgressBar, {
+    color: 'rgb(143, 255, 199)',
+    failedColor: 'red',
+    height: '10px'
+});
 
 Vue.component('pagination', require('vue-bootstrap-pagination'));
 Vue.component('mailing-lists', require('./components/MailingLists.vue'));
-// import MailingLists from './components/MailingLists.vue';
 
-var vm = new Vue({
+new Vue({
     el: '#app'
 });
