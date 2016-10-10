@@ -7,5 +7,5 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::get('home', ['as' => 'dashboard', 'uses' => 'AvaController@index']);
-Route::get('subscribers', ['as' => 'subscribers.landing', 'uses' => 'SubscriberController@index']);
+Route::resource('subscribers', 'SubscriberController');
 Route::resource('mailing-lists', 'MailingListController');

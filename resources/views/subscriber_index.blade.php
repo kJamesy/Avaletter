@@ -1,19 +1,15 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
+<div class="container" id="app-subscribers">
     <div class="row">
         <div class="col-md-2">
             @include('layouts.sidebar')
         </div>
         <div class="col-md-10">
-            <div class="panel panel-default">
-                <div class="panel-heading">Subscribers</div>
+            <subscribers>
 
-                <div class="panel-body">
-                    <h2>Hi</h2>
-                </div>
-            </div>
+            </subscribers>
         </div>
     </div>
 </div>

@@ -12,17 +12,50 @@ require('./bootstrap');
  * the body of the page. From here, you may begin adding components to
  * the application, or feel free to tweak this setup for your needs.
  */
+import VueRouter from 'vue-router';
+Vue.use(VueRouter);
+
 import VueProgressBar from 'vue-progressbar';
-
-Vue.use(VueProgressBar, {
-    color: 'rgb(143, 255, 199)',
-    failedColor: 'red',
-    height: '10px'
-});
-
+Vue.use(VueProgressBar, { color: 'rgb(143, 255, 199)', failedColor: 'red', height: '10px'});
 Vue.component('pagination', require('vue-bootstrap-pagination'));
-Vue.component('mailing-lists', require('./components/MailingLists.vue'));
 
-new Vue({
-    el: '#app'
+/**
+ * Mailing Lists
+ */
+import MailingLists from './components/MailingLists.vue';
+
+if ( $('#app-mailing-lists').length ) {
+    new Vue({
+        el: '#app-mailing-lists',
+        components: {
+            MailingLists
+        }
+    });
+}
+
+
+/**
+ * Subscribers
+ */
+import Subscribers from  './components/Subscribers.vue';
+import SubscribersList from './components/SubscribersList.vue';
+import SubscribersNew from  './components/SubscribersNew.vue';
+
+var router = new VueRouter({
+    mode: 'hash',
+    linkActiveClass: 'active',
+    routes: [
+        { path: '', name: 'subscribers', component: SubscribersList },
+        { path: '/new', name: 'subscribers.new', component: SubscribersNew }
+    ]
 });
+
+if ( $('#app-subscribers').length ) {
+    new Vue({
+        el: '#app-subscribers',
+        components: {
+            Subscribers
+        },
+        router
+    });
+}
