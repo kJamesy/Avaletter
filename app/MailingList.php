@@ -6,7 +6,23 @@ use Illuminate\Database\Eloquent\Model;
 
 class MailingList extends Model
 {
+
+    /**
+     * Database table
+     * @var string
+     */
     protected $table = 'mailing_lists';
+
+    /**
+     * The attributes that are mass assignable.
+     * @var array
+     */
+    protected $fillable = ['name', 'meta'];
+
+    /**
+     * Validation rules
+     * @var array
+     */
     public static $rules = ['name' => 'required|unique:mailing_lists|max:255'];
 
     /**

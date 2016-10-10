@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container">
+    <div class="container" id="app-mailing-lists">
         <div class="row">
             <div class="col-md-2">
                 @include('layouts.sidebar')
