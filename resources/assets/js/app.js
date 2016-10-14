@@ -40,13 +40,17 @@ if ( $('#app-mailing-lists').length ) {
 import Subscribers from  './components/Subscribers.vue';
 import SubscribersList from './components/SubscribersList.vue';
 import SubscribersNew from  './components/SubscribersNew.vue';
+import SubscribersEdit from './components/SubscribersEdit.vue';
 
 var router = new VueRouter({
     mode: 'hash',
+    base: 'subscribers',
     linkActiveClass: 'active',
     routes: [
-        { path: '', name: 'subscribers', component: SubscribersList },
-        { path: '/new', name: 'subscribers.new', component: SubscribersNew }
+        { path: '/', name: 'subscribers.index', component: SubscribersList },
+        { path: '/new', name: 'subscribers.new', component: SubscribersNew },
+        { path: '/edit/:id(\\d+)', name: 'subscribers.edit', component: SubscribersEdit },
+        { path: '*', redirect: { name: 'subscribers.index' } }
     ]
 });
 

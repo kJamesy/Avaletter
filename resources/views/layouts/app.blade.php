@@ -20,6 +20,7 @@
             'csrfToken' => csrf_token(),
         ]); ?>
     </script>
+    @yield('view-header')
 </head>
 <body>
     <nav class="navbar navbar-default navbar-static-top">

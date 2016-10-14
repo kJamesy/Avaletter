@@ -3,12 +3,12 @@
         <vue-progress-bar></vue-progress-bar>
         <form v-on:submit.prevent='addMList' v-if='! editingMList' class='animated bounce'>
             <div class="form-group">
-                <input class="form-control" placeholder="New Mailing List" v-model="newMList.name">
+                <input class="form-control" placeholder="New Mailing List" v-model.trim="newMList.name">
             </div>
         </form>
         <form v-on:submit.prevent='updateMList' v-if='editingMList' v-on:keyup.esc="editingMList = ! editingMList" class='animated bounce'>
             <div class="form-group">
-                <input class="form-control" placeholder="Mailing List" v-model="editMList.name">
+                <input class="form-control" placeholder="Mailing List" v-model.trim="editMList.name">
             </div>
         </form>
 
@@ -24,6 +24,7 @@
             <thead>
                 <tr>
                     <th>Name <button v-on:click="changeSort('name')"><i v-bind:class="'fa ' + getSortIcon('name')"></i></button></th>
+                    <th>Subscribers Count <button v-on:click="changeSort('subscribers_count')"><i v-bind:class="'fa ' + getSortIcon('subscribers_count')"></i></button></th>
                     <th>Created <button v-on:click="changeSort('created_at')"><i v-bind:class="'fa ' + getSortIcon('created_at')"></i></button></th>
                     <th>Updated <button v-on:click="changeSort('updated_at')"><i v-bind:class="'fa ' + getSortIcon('updated_at')"></i></button></th>
                     <th colspan="2"></th>
@@ -32,6 +33,7 @@
             <tbody>
                 <tr v-for="mList in orderedMLists">
                     <td>{{ mList.name }}</td>
+                    <td>{{ mList.subscribers_count }}</td>
                     <td>{{ mList.created_at | localTime }}</td>
                     <td>{{ mList.updated_at | localTime }}</td>
                     <td><i class="fa fa-pencil-square-o btn btn-default btn-xs" v-on:click="fetchMList(mList)"></i></td>
@@ -39,21 +41,28 @@
                 </tr>
             </tbody>
         </table>
-        <pagination :pagination="pagination" :callback="fetchMLists" :options="paginationOptions" v-show="! hidePagination()"></pagination>
+        <pagination :pagination="pagination" :callback="fetchMLists" :options="paginationOptions"></pagination>
     </div>
 </template>
 
 <script>
     export default {
+        mounted: function() {
+            this.$nextTick(function() {
+                this.resourceUrl = 'mailing-lists';
+                this.fetchMLists();
+            });
+        },
         data: function() {
             return {
                 newMList: { name: ''},
                 mLists: [],
-                orderToggle: -1,
-                orderAttr: 'created_at',
+                orderToggle: ( userMailingListsSettings.order && userMailingListsSettings.order == 'asc' ) ? 1 : -1,
+                orderAttr: ( userMailingListsSettings.order_by && userMailingListsSettings.order_by.length ) ? userMailingListsSettings.order_by : 'updated_at',
+                defaultOrderAttr: 'updated_at',
                 pagination: {
                     total: 25,
-                    per_page: 10,
+                    per_page: ( userMailingListsSettings.paginate && userMailingListsSettings.paginate.length) ? userMailingListsSettings.paginate : 25,
                     current_page: 1,
                     last_page: 1,
                     from: 1,
@@ -68,21 +77,15 @@
                     { text: '25', value: 25},
                     { text: '50', value: 50},
                     { text: '100', value: 100},
-                    { text: '1000', value: 1000}
+                    { text: '500', value: 500}
                 ],
                 editingMList: false,
                 editMList: {}
             }
         },
-        mounted: function() {
-            this.$nextTick(function() {
-                this.fetchMLists();
-                this.resourceUrl = 'mailing-lists';
-            });
-        },
         computed: {
             orderedMLists: function() {
-                return _.orderBy(this.mLists, [this.orderAttr], [this.orderToggle]);
+                return _.orderBy(this.mLists, [this.orderAttr, this.defaultOrderAttr], [( this.orderToggle == 1 ) ? 'asc' : 'desc', 'desc']);
             }
         },
         methods: {
@@ -144,16 +147,9 @@
 
                 if ( newMListName ) {
                     progress.start();
-                    vm.newMList.name = newMListName;
 
                     vm.$http.post(vm.resourceUrl, vm.newMList).then(function(response) {
-                        swal({
-                            title: "Success",
-                            text: 'Mailing List created',
-                            type: 'success',
-                            animation: 'slide-from-bottom',
-                            timer: 3000
-                        });
+                        swal({ title: "Success", text: 'Mailing List created', type: 'success', animation: 'slide-from-bottom', timer: 3000 });
 
                         vm.newMList = { name: '' };
                         progress.finish();
@@ -199,16 +195,9 @@
 
                 if ( editMListName ) {
                     progress.start();
-                    vm.editMList.name = editMListName;
 
                     vm.$http.put(vm.resourceUrl + '/' + vm.editMList.id, vm.editMList).then(function(response) {
-                        swal({
-                            title: "Success",
-                            text: 'Mailing List updated',
-                            type: 'success',
-                            animation: 'slide-from-bottom',
-                            timer: 3000
-                        });
+                        swal({ title: "Success", text: 'Mailing List updated', type: 'success', animation: 'slide-from-bottom', timer: 3000 });
 
                         vm.editMList = {};
                         vm.editingMList = false;
@@ -217,6 +206,9 @@
                     }, function(error) {
                         if ( error.status && error.status == 422 && error.data.name ) {
                             swal('An Error Occurred', error.data.name, 'error');
+                        }
+                        else if ( error.status && error.status == 404 ) {
+                            swal({ title: "An Error Occurred", text: 'The mailing list does not exist', type: 'error', animation: 'slide-from-top', timer: 3000 });
                         }
                         else {
                             swal('An Error Occurred', 'Please refresh the page and try again.', 'error');
@@ -235,30 +227,26 @@
                     type: "warning",
                     showCancelButton: true,
                     confirmButtonColor: "#DD6B55",
-                    confirmButtonText: "Delete!",
+                    confirmButtonText: "Delete",
                     closeOnConfirm: false
                 }, function() {
                     progress.start();
 
                     vm.$http.delete(vm.resourceUrl + '/' + mList.id).then(function(response) {
                         if ( response.data && response.data.success ) {
-                            swal({
-                                title: "Success",
-                                text: response.data.success,
-                                type: 'success',
-                                animation: 'slide-from-bottom',
-                                timer: 3000
-                            });
+                            swal({ title: "Success", text: response.data.success, type: 'success', animation: 'slide-from-bottom', timer: 3000 });
 
+                            vm.$set(vm.pagination, 'total', vm.pagination.total - 1);
                             progress.finish();
                             vm.fetchMLists();
                         }
                     }, function(error) {
-                        if ( error.data && error.data.error )
-                            swal('An Error Occurred', error.data.error, 'error');
+                        progress.fail();
+                        if ( error.status && error.status == 404 ) {
+                            swal({ title: "An Error Occurred", text: 'The mailing list does not exist', type: 'error', animation: 'slide-from-top', timer: 3000 });
+                        }
                         else
                             swal('An Error Occurred', 'Please refresh the page and try again.', 'error');
-                        progress.fail();
                     });
                 });
             }

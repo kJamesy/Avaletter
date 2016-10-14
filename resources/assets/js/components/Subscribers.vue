@@ -1,8 +1,11 @@
 <template>
     <div class="subscribers">
+        <vue-progress-bar></vue-progress-bar>
         <subscribers-nav></subscribers-nav>
 
-        <router-view></router-view>
+        <transition>
+            <router-view></router-view>
+        </transition>
     </div>
 </template>
 <style>

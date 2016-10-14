@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\MailingList;
+use App\User;
 use Illuminate\Http\Request;
 
 class MailingListController extends Controller
@@ -19,8 +20,8 @@ class MailingListController extends Controller
     {
         $this->middleware('auth');
         $this->rules = MailingList::$rules;
-        $this->paginate = 1000;
-        $this->orderByFields = ['name', 'created_at', 'updated_at'];
+        $this->paginate = 25;
+        $this->orderByFields = ['name', 'subscribers_count', 'created_at', 'updated_at'];
         $this->orderCriteria = ['asc', 'desc'];
     }
 
@@ -31,12 +32,31 @@ class MailingListController extends Controller
      */
     public function index(Request $request)
     {
-        if ( ! $request->ajax() )
-            return view('mailing_list_index');
+        if ( ! $request->ajax() ) {
+            $settings = ['mailing_lists_order_by' => 'updated_at', 'mailing_lists_order' => 'desc', 'mailing_lists_paginate' => $this->paginate];
+
+            if ( $user = $request->user() ) {
+                if ( cache()->has('user_' . $user->id . '_mailing_lists_order_by') ) {
+                    $settings['mailing_lists_order_by'] = cache('user_' . $user->id . '_mailing_lists_order_by');
+                    $settings['mailing_lists_order'] = cache('user_' . $user->id . '_mailing_lists_order');
+                    $settings['mailing_lists_paginate'] = cache('user_' . $user->id . '_mailing_lists_paginate');
+                }
+                else {
+                    User::cacheSettings($user->id,
+                        ['mailing_lists_order_by', 'mailing_lists_order', 'mailing_lists_paginate'],
+                        [$settings['mailing_lists_order_by'], $settings['mailing_lists_order'], $settings['mailing_lists_paginate']]);
+                }
+            }
+
+            return view('mailing_list_index')->with(compact('settings'));
+        }
         else {
-            $orderBy = in_array(strtolower($request->orderBy), $this->orderByFields) ? strtolower($request->orderBy) : 'created_at';
+            $orderBy = in_array(strtolower($request->orderBy), $this->orderByFields) ? strtolower($request->orderBy) : 'updated_at';
             $order = in_array(strtolower($request->order), $this->orderCriteria) ? strtolower($request->order) : 'desc';
             $paginate = (int) $request->perPage ?: $this->paginate;
+
+            if ( $user = $request->user() )
+                User::cacheSettings($user->id, ['mailing_lists_order_by', 'mailing_lists_order', 'mailing_lists_paginate'], [$orderBy, $order, $paginate]);
 
             return MailingList::getMailingLists($orderBy, $order, $paginate);
         }
@@ -69,7 +89,7 @@ class MailingListController extends Controller
         if ( $mList = MailingList::find($id) )
             return $mList;
         else
-            return response()->json(['error' => 'Mailing list does not exist']);
+            return response()->json(['error' => 'Mailing list does not exist'], 404);
     }
 
     /**
@@ -92,7 +112,7 @@ class MailingListController extends Controller
             return $mList;
         }
         else
-            return response()->json(['error' => 'Mailing list does not exist']);
+            return response()->json(['error' => 'Mailing list does not exist'], 404);
     }
 
     /**
@@ -107,6 +127,6 @@ class MailingListController extends Controller
            return response()->json(['success' => 'Mailing list successfully deleted']);
        }
        else
-           return response()->json(['error' => 'Mailing list does not exist']);
+           return response()->json(['error' => 'Mailing list does not exist'], 404);
     }
 }

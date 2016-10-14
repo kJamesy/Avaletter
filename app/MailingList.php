@@ -43,6 +43,15 @@ class MailingList extends Model
      */
     public static function getMailingLists($orderBy = 'created_at', $order = 'desc', $paginate = 1000)
     {
-        return static::with('subscribers')->orderBy($orderBy, $order)->paginate($paginate);
+        return static::withCount('subscribers')->orderBy($orderBy, $order)->paginate($paginate);
+    }
+
+    /**
+     * Get a list of mailing lists
+     * @return mixed
+     */
+    public static function getMailingListsList()
+    {
+        return static::orderBy('name')->get(['id', 'name']);
     }
 }

@@ -19,6 +19,12 @@ class Subscriber extends Model
     protected $fillable = ['first_name', 'last_name', 'email', 'meta'];
 
     /**
+     * Cast the active column value to a boolean
+     * @var array
+     */
+    protected $casts = ['active' => 'boolean'];
+
+    /**
      * Validation rules
      * @var array
      */
@@ -34,6 +40,17 @@ class Subscriber extends Model
     }
 
     /**
+     * Find specified subscriber
+     * @param $id
+     * @return \Illuminate\Database\Eloquent\Collection|Model|null|static|static[]
+     */
+    public static function getSubscriber($id)
+    {
+        return static::with('mailing_lists')->where('is_deleted', 0)->find($id);
+    }
+
+    /**
+     * Get all subscribers
      * @param string $orderBy
      * @param string $order
      * @param int $paginate
@@ -41,6 +58,6 @@ class Subscriber extends Model
      */
     public static function getSubscribers($orderBy = 'created_at', $order = 'desc', $paginate = 1000)
     {
-        return static::with('mailing_lists')->orderBy($orderBy, $order)->paginate($paginate);
+        return static::with('mailing_lists')->where('is_deleted', 0)->orderBy($orderBy, $order)->paginate($paginate);
     }
 }

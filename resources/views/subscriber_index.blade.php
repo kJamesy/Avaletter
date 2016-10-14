@@ -1,16 +1,27 @@
 @extends('layouts.app')
 
-@section('content')
-<div class="container" id="app-subscribers">
-    <div class="row">
-        <div class="col-md-2">
-            @include('layouts.sidebar')
-        </div>
-        <div class="col-md-10">
-            <subscribers>
+@section('view-header')
+    <script>
+        window.userSubscribersSettings = {
+            order_by: '{{ $settings['subscribers_order_by'] }}',
+            order: '{{ $settings['subscribers_order'] }}',
+            paginate: '{{ $settings['subscribers_paginate'] }}',
+        };
+    </script>
+@endsection
 
-            </subscribers>
+@section('content')
+    <div class="container" id="app-subscribers">
+        <div class="row">
+            <div class="col-md-2">
+                @include('layouts.sidebar')
+            </div>
+            <div class="col-md-10">
+
+                <subscribers>
+
+                </subscribers>
+            </div>
         </div>
     </div>
-</div>
 @endsection

@@ -24,4 +24,18 @@ class User extends Authenticatable
     protected $hidden = [
         'password', 'remember_token',
     ];
+
+    /**
+     * Cache the supplied settings for the supplied user; forever
+     * @param $userId
+     * @param array $cacheKeys
+     * @param array $cacheValues
+     */
+    public static function cacheSettings($userId, $cacheKeys = [], $cacheValues = [])
+    {
+        foreach( $cacheKeys as $key => $cacheKey ) {
+            cache()->forget('user_' . $userId . '_' . $cacheKey);
+            cache()->forever('user_' . $userId . '_' . $cacheKey, $cacheValues[$key]);
+        }
+    }
 }
