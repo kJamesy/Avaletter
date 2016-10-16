@@ -8,15 +8,10 @@
                 </option>
             </select>
         </div>
-        All Checked {{ isAllChecked }}
-        <br />
-        Subscriber Ids {{ subscriberIds }}
-        <br />
-        Checked Subscribers {{ checkedSubscribers }}
         <table class="table">
             <thead>
                 <tr>
-                    <th><input type="checkbox" v-model="isAllChecked"></th>
+                    <th><input type="checkbox" v-model="selectAll"></th>
                     <th>First Name <button v-on:click="changeSort('first_name')"><i v-bind:class="'fa ' + getSortIcon('first_name')"></i></button></th>
                     <th>Last Name <button v-on:click="changeSort('last_name')"><i v-bind:class="'fa ' + getSortIcon('last_name')"></i></button></th>
                     <th>Email <button v-on:click="changeSort('email')"><i v-bind:class="'fa ' + getSortIcon('email')"></i></button></th>
@@ -29,8 +24,8 @@
             </thead>
             <tbody>
                 <tr v-for="subscriber in orderedSubscribers">
-                    <td><input type="checkbox" v-bind:id="'checkbox' + subscriber.id" v-model="checkedSubscribers" v-bind:value="subscriber.id" v-on:change="checkedChanged(subscriber.id)"></td>
-                    <td><label v-bind:for="'checkbox' + subscriber.id">{{ subscriber.first_name }}</label></td>
+                    <td><input type="checkbox" v-model="selected" v-bind:value="subscriber.id" number></td>
+                    <td>{{ subscriber.first_name }}</td>
                     <td>{{ subscriber.last_name }}</td>
                     <td>{{ subscriber.email }}</td>
                     <td><i class="fa" v-bind:class='activeIcon(subscriber.active)'></i></td>
@@ -62,31 +57,37 @@
                 defaultOrderAttr: 'updated_at',
                 pagination: {
                     total: 0,
-                    per_page: 25, //( userSubscribersSettings.paginate && userSubscribersSettings.paginate.length ) ? userSubscribersSettings.paginate : 25,
+                    per_page: ( userSubscribersSettings.paginate && userSubscribersSettings.paginate.length ) ? userSubscribersSettings.paginate : 25,
                     current_page: 1,
                     last_page: 0,
                     from: 1,
-                    to: 25, //( userSubscribersSettings.paginate && userSubscribersSettings.paginate.length ) ? userSubscribersSettings.paginate : 25
+                    to: ( userSubscribersSettings.paginate && userSubscribersSettings.paginate.length ) ? userSubscribersSettings.paginate : 25
                 },
                 paginationOptions: {
                     offset: 5,
                     alwaysShowPrevNext: true
                 },
                 perPageOptions: [
-                    { text: '5', value: 5 },
                     { text: '25', value: 25},
                     { text: '50', value: 50},
                     { text: '100', value: 100},
                     { text: '500', value: 500}
                 ],
                 subscriberIds: [],
-                checkedSubscribers: [],
-                isAllChecked: false,
+                selected: []
             }
         },
         computed: {
             orderedSubscribers() {
                 return _.orderBy(this.subscribers, [this.orderAttr, this.defaultOrderAttr], [( this.orderToggle == 1 ) ? 'asc' : 'desc', 'desc']);
+            },
+            selectAll: {
+                get() {
+                    return this.subscriberIds ? this.selected.length == this.subscriberIds.length : false;
+                },
+                set(value) {
+                    this.selected = value ? this.subscriberIds : [];
+                }
             }
         },
         methods: {
@@ -201,31 +202,6 @@
                 }
 
                 return mListsString;
-            },
-            checkedChanged(id) {
-                if ( _.indexOf(this.checkedSubscribers, id) > -1 ) {
-                    if ( this.checkedSubscribers.length == this.subscribers.length )
-                        this.isAllChecked = true;
-                }
-
-            }
-//            allCheckedChanged() {
-//                if ( this.isAllChecked )
-//                    this.checkedSubscribers = this.subscriberIds;
-//                else
-//                    this.checkedSubscribers = [];
-//            }
-        },
-        watch: {
-            isAllChecked(newVal) {
-                if ( newVal == true )
-                    this.checkedSubscribers = this.subscriberIds;
-                else {
-                    this.checkedSubscribers = []; //if ( this.checkedSubscribers.length == this.subscriberIds.length )
-                }
-            },
-            checkedSubscribers(newVal, oldVal) {
-                this.isAllChecked = ( this.checkedSubscribers.length == this.subscriberIds.length );
             }
         },
         filters: {

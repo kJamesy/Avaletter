@@ -47,13 +47,13 @@
 
 <script>
     export default {
-        mounted: function() {
+        mounted() {
             this.$nextTick(function() {
                 this.resourceUrl = 'mailing-lists';
                 this.fetchMLists();
             });
         },
-        data: function() {
+        data() {
             return {
                 newMList: { name: ''},
                 mLists: [],
@@ -84,12 +84,12 @@
             }
         },
         computed: {
-            orderedMLists: function() {
+            orderedMLists() {
                 return _.orderBy(this.mLists, [this.orderAttr, this.defaultOrderAttr], [( this.orderToggle == 1 ) ? 'asc' : 'desc', 'desc']);
             }
         },
         methods: {
-            fetchMLists: function (orderAttr, orderToggle) {
+            fetchMLists(orderAttr, orderToggle) {
                 var vm = this;
                 var orderBy = orderAttr ? orderAttr : vm.orderAttr;
                 var order = orderToggle ? orderToggle : vm.orderToggle;
@@ -130,17 +130,17 @@
                     progress.fail();
                 });
             },
-            changeSort: function(attr) {
+            changeSort(attr) {
                 var orderToggle = ( this.orderAttr == attr ) ? this.orderToggle * -1 : 1;
                 this.fetchMLists(attr, orderToggle);
             },
-            getSortIcon: function(attr) {
+            getSortIcon(attr) {
                 var icon = 'fa-sort';
                 if ( this.orderAttr == attr )
                     icon = ( this.orderToggle == 1 ) ? 'fa-sort-asc' : 'fa-sort-desc';
                 return icon;
             },
-            addMList: function () {
+            addMList() {
                 var vm = this;
                 var progress = vm.$Progress;
                 var newMListName = vm.newMList.name.trim();
@@ -165,10 +165,10 @@
                     });
                 }
             },
-            hidePagination: function() {
+            hidePagination() {
                 return ( Math.ceil(this.pagination.total / this.pagination.per_page) == 1 )
             },
-            fetchMList: function(mList) {
+            fetchMList(mList) {
                 var vm = this;
                 if ( mList && mList.id ) {
                     var progress = vm.$Progress;
@@ -188,7 +188,7 @@
                 else
                     swal('An Error Occurred', 'Please refresh the page and try again.', 'error');
             },
-            updateMList: function() {
+            updateMList() {
                 var vm = this;
                 var progress = vm.$Progress;
                 var editMListName = vm.editMList.name.trim();
@@ -217,7 +217,7 @@
                     });
                 }
             },
-            deleteMList: function(mList) {
+            deleteMList(mList) {
                 var vm = this;
                 var progress = this.$Progress;
 
@@ -252,7 +252,7 @@
             }
         },
         filters: {
-            localTime: function (date) {
+            localTime(date) {
                 return moment(date + ' Z', 'YYYY-MM-DD HH:mm:ss Z', true).format('D MMM YYYY HH:mm');
             }
         }
