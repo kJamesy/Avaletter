@@ -24,7 +24,10 @@
                     <option v-for="mList in sortedMLists" v-bind:value="mList.id">{{ mList.name }}</option>
                 </select>
             </div>
-            <button type="submit" class="btn btn-default">Submit</button>
+            <div class="clearfix">
+                <button type="submit" class="btn btn-default">Submit</button>
+                <router-link v-bind:to="{ name: 'subscribers.index' }" class="btn btn-default" style="float:right" exact replace>Cancel</router-link>
+            </div>
         </form>
     </div>
 </template>

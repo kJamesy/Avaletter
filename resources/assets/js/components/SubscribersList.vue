@@ -1,6 +1,15 @@
 <template>
-    <div class="subscribers-list">
+    <div class="subscribers-list" v-cloak>
+        <div style="float: left; margin: 20px 0;" v-if="selected.length">
+            <label for="quick-edit">Quick Edit</label>
+            <select v-model="quickEdit" id="quick-edit">
+                <option v-for="option in quickEditOptions" v-bind:value="option.value">
+                    {{ option.text }}
+                </option>
+            </select>
+        </div>
         <div style="float: right; margin: 20px 0;">
+            Page {{ pagination.current_page }} of {{ pagination.last_page }} ({{ pagination.total }} records)
             <label for="records_per_page">Records Per Page</label>
             <select v-model="pagination.per_page" id="records_per_page" >
                 <option v-for="option in perPageOptions" v-bind:value="option.value">
@@ -8,6 +17,7 @@
                 </option>
             </select>
         </div>
+        <div class="clearfix"></div>
         <table class="table">
             <thead>
                 <tr>
@@ -51,6 +61,7 @@
         },
         data() {
             return {
+                mList: this.$route.params.mList,
                 subscribers: [],
                 orderToggle: ( userSubscribersSettings.order && userSubscribersSettings.order == 'asc' ) ? 1 : -1,
                 orderAttr: ( userSubscribersSettings.order_by && userSubscribersSettings.order_by.length ) ? userSubscribersSettings.order_by : 'updated_at',
@@ -68,11 +79,18 @@
                     alwaysShowPrevNext: true
                 },
                 perPageOptions: [
-                    { text: '25', value: 25},
-                    { text: '50', value: 50},
-                    { text: '100', value: 100},
-                    { text: '500', value: 500}
+                    { text: '25', value: 25} ,
+                    { text: '50', value: 50 },
+                    { text: '100', value: 100 },
+                    { text: '500', value: 500 }
                 ],
+                quickEditOptions: [
+                    { text: 'Select Option', value: '' },
+                    { text: 'Activate', value: 'activate' },
+                    { text: 'Deactivate', value: 'deactivate' },
+                    { text: 'Delete', value: 'delete' },
+                ],
+                quickEdit: '',
                 subscriberIds: [],
                 selected: []
             }
@@ -97,12 +115,14 @@
                 var order = orderToggle ? orderToggle : vm.orderToggle;
                 var progress = vm.$Progress;
                 var lastPage = _.ceil(vm.pagination.total / vm.pagination.per_page);
+                vm.selectAll = false;
 
                 let params = {
                     perPage: vm.pagination.per_page,
-                    page: ( lastPage < vm.pagination.last_page ) ? lastPage : vm.pagination.current_page,
+                    page: ( lastPage < vm.pagination.last_page ) ? 1 : vm.pagination.current_page, //lastPage in place of 1 is mental
                     orderBy: orderBy,
-                    order: ( order == 1 ) ? 'asc' : 'desc'
+                    order: ( order == 1 ) ? 'asc' : 'desc',
+                    mailingList: this.mList ? this.mList : 0
                 };
 
                 progress.start();
@@ -152,7 +172,7 @@
                 }, function() {
                     progress.start();
 
-                    vm.$http.delete(vm.resourceUrl + '/' + subscriber.id ).then(function(response) {
+                    vm.$http.delete(vm.resourceUrl + '/' + subscriber.id).then(function(response) {
                         if ( response.data && response.data.success ) {
                             progress.finish();
                             swal({ title: "Success", text: response.data.success, type: 'success', animation: 'slide-from-bottom'}, function() {
@@ -172,6 +192,37 @@
                             swal('An Error Occurred', 'Please refresh the page and try again.', 'error');
                     });
                 });
+            },
+            quickEditSubscribers() {
+                var vm = this;
+                var action = _.toLower(vm.quickEdit);
+                var selected = vm.selected;
+                var progress = vm.$Progress;
+
+                if ( action.length && selected.length ) {
+                    progress.start();
+
+                    vm.$http.put(vm.resourceUrl + '/' + action + '/quick-edit', {subscribers : selected}).then(function(response) {
+                        if ( response.data && response.data.success ) {
+                            progress.finish();
+                            vm.quickEdit = '';
+                            swal({ title: "Success", text: response.data.success, type: 'success', animation: 'slide-from-bottom'}, function() {
+
+                                if ( action != 'delete' ) { //Force them to see what they did!
+                                    vm.orderAttr = 'updated_at';
+                                    vm.orderToggle = -1;
+                                }
+                                vm.fetchSubscribers();
+                            });
+                        }
+                    }, function(error) {
+                        progress.fail();
+                        vm.quickEdit = '';
+                        var message = ( error && error.length ) ? error : 'Please refresh the page and try again.';
+                        swal('An Error Occurred', message, 'error');
+                    });
+
+                }
             },
             changeSort(attr) {
                 var orderToggle = ( this.orderAttr == attr ) ? this.orderToggle * -1 : 1;
@@ -202,6 +253,27 @@
                 }
 
                 return mListsString;
+            }
+        },
+        watch: {
+            selected() {
+                this.quickEdit = '';
+            },
+            quickEdit(action) {
+                var vm = this;
+                if ( action.length && vm.selected.length ) {
+                    swal({
+                        title: _.capitalize(action) + " " + vm.selected.length + " Subscribers?",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonText: _.capitalize(action),
+                    }, function(confirmed) {
+                        if ( confirmed )
+                            vm.quickEditSubscribers();
+                        else
+                            vm.quickEdit = '';
+                    });
+                }
             }
         },
         filters: {

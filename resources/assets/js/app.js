@@ -41,6 +41,7 @@ import Subscribers from  './components/Subscribers.vue';
 import SubscribersList from './components/SubscribersList.vue';
 import SubscribersNew from  './components/SubscribersNew.vue';
 import SubscribersEdit from './components/SubscribersEdit.vue';
+import SubscribersTrash from './components/SubscribersTrash.vue';
 
 var router = new VueRouter({
     mode: 'hash',
@@ -48,8 +49,10 @@ var router = new VueRouter({
     linkActiveClass: 'active',
     routes: [
         { path: '/', name: 'subscribers.index', component: SubscribersList },
+        { path: '/:mList(\\d+)/mailing-list', name: 'subscribers.mailing_list', component: SubscribersList },
         { path: '/new', name: 'subscribers.new', component: SubscribersNew },
         { path: '/edit/:id(\\d+)', name: 'subscribers.edit', component: SubscribersEdit },
+        { path: '/trash', name: 'subscribers.trash', component: SubscribersTrash },
         { path: '*', redirect: { name: 'subscribers.index' } }
     ]
 });

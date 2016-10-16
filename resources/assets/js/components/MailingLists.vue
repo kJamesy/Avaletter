@@ -33,7 +33,7 @@
             <tbody>
                 <tr v-for="mList in orderedMLists">
                     <td>{{ mList.name }}</td>
-                    <td>{{ mList.subscribers_count }}</td>
+                    <td><a class="btn btn-default btn-xs" v-bind:href="'subscribers#' + mList.id + '/mailing-list'">{{ mList.subscribers_count }}</a></td>
                     <td>{{ mList.created_at | localTime }}</td>
                     <td>{{ mList.updated_at | localTime }}</td>
                     <td><i class="fa fa-pencil-square-o btn btn-default btn-xs" v-on:click="fetchMList(mList)"></i></td>
@@ -73,11 +73,11 @@
                     alwaysShowPrevNext: true
                 },
                 perPageOptions: [
-                    { text: '10', value: 10},
-                    { text: '25', value: 25},
-                    { text: '50', value: 50},
-                    { text: '100', value: 100},
-                    { text: '500', value: 500}
+                    { text: '10', value: 10 },
+                    { text: '25', value: 25 },
+                    { text: '50', value: 50 },
+                    { text: '100', value: 100 },
+                    { text: '500', value: 500 }
                 ],
                 editingMList: false,
                 editMList: {}
@@ -98,7 +98,7 @@
 
                 let params = {
                     perPage: vm.pagination.per_page,
-                    page: ( lastPage < vm.pagination.last_page ) ? lastPage : vm.pagination.current_page,
+                    page: ( lastPage < vm.pagination.last_page ) ? 1 : vm.pagination.current_page, //lastPage in place of 1 is mental
                     orderBy: orderBy,
                     order: ( order == 1 ) ? 'asc' : 'desc'
                 };

@@ -40,13 +40,23 @@ class Subscriber extends Model
     }
 
     /**
+     * Find specified active subscriber
+     * @param $id
+     * @return \Illuminate\Database\Eloquent\Collection|Model|null|static|static[]
+     */
+    public static function getActiveSubscriber($id)
+    {
+        return static::with('mailing_lists')->where('is_deleted', 0)->find($id);
+    }
+
+    /**
      * Find specified subscriber
      * @param $id
      * @return \Illuminate\Database\Eloquent\Collection|Model|null|static|static[]
      */
     public static function getSubscriber($id)
     {
-        return static::with('mailing_lists')->where('is_deleted', 0)->find($id);
+        return static::with('mailing_lists')->find($id);
     }
 
     /**
@@ -54,10 +64,17 @@ class Subscriber extends Model
      * @param string $orderBy
      * @param string $order
      * @param int $paginate
+     * @param int $mailingList
+     * @param int $trash
      * @return mixed
      */
-    public static function getSubscribers($orderBy = 'created_at', $order = 'desc', $paginate = 1000)
+    public static function getSubscribers($orderBy = 'created_at', $order = 'desc', $paginate = 1000, $mailingList = 0, $trash = 0)
     {
-        return static::with('mailing_lists')->where('is_deleted', 0)->orderBy($orderBy, $order)->paginate($paginate);
+        if ( $mailingList )
+            return static::whereHas('mailing_lists', function($query) use($mailingList) {
+                $query->where('mailing_lists.id', $mailingList);
+            })->where('is_deleted', $trash)->orderBy($orderBy, $order)->paginate($paginate);
+        else
+            return static::with('mailing_lists')->where('is_deleted', $trash)->orderBy($orderBy, $order)->paginate($paginate);
     }
 }

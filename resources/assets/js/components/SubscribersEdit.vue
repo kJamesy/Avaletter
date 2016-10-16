@@ -138,7 +138,7 @@
                 }, function() {
                     progress.start();
 
-                    vm.$http.delete(vm.resourceUrl + '/' + subscriber.id ).then(function(response) {
+                    vm.$http.delete(vm.resourceUrl + '/' + vm.id ).then(function(response) {
                         if ( response.data && response.data.success ) {
                             progress.finish();
                             vm.clearSubscriber();

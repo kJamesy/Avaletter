@@ -60,7 +60,10 @@ class SubscriberController extends Controller
             if ( $user = $request->user() )
                 User::cacheSettings($user->id, ['subscribers_order_by', 'subscribers_order', 'subscribers_paginate'], [$orderBy, $order, $paginate]);
 
-            return Subscriber::getSubscribers($orderBy, $order, $paginate);
+            $getDeleted = $request->trash ? 1 : 0;
+            $getInMailingList = (int) $request->mailingList ?: 0;
+
+            return Subscriber::getSubscribers($orderBy, $order, $paginate, $getInMailingList, $getDeleted);
         }
     }
 
@@ -102,7 +105,7 @@ class SubscriberController extends Controller
      */
     public function show($id)
     {
-        if ( $subscriber = Subscriber::getSubscriber( (int) $id) ) {
+        if ( $subscriber = Subscriber::getActiveSubscriber( (int) $id) ) {
             $mLists = MailingList::getMailingListsList();
             return response()->json(compact('subscriber', 'mLists'));
         }
@@ -118,7 +121,7 @@ class SubscriberController extends Controller
      */
     public function update(Request $request, $id)
     {
-        if ( $subscriber = Subscriber::getSubscriber( (int) $id) ) {
+        if ( $subscriber = Subscriber::getActiveSubscriber( (int) $id) ) {
             $rules = $this->rules;
             if ( strtolower($subscriber->email) == strtolower(trim($request->email)) )
                 $rules['email'] = 'required|email|max:255';
@@ -163,5 +166,54 @@ class SubscriberController extends Controller
         }
         else
             return response()->json(['error' => 'Subscriber does not exist'], 404);
+    }
+
+    /**
+     * Perform specified action on provided resource
+     * @param Request $request
+     * @param $update
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function quickUpdate(Request $request, $update)
+    {
+        if ( count($request->subscribers) ) {
+            try {
+                if ( strtolower($update) == 'destroy' ) {
+                    Subscriber::whereIn('id', $request->subscribers)->delete();
+
+                    return response()->json(['success' => count($request->subscribers) . ' subscribers successfully permanently deleted']);
+                }
+                else {
+                    $subscribers = Subscriber::whereIn('id', $request->subscribers)->get();
+
+                    if ($subscribers) {
+                        foreach ($subscribers as $subscriber) {
+                            switch (strtolower($update)) {
+                                case 'activate':
+                                    $subscriber->active = 1;
+                                    break;
+                                case 'deactivate':
+                                    $subscriber->active = 0;
+                                    break;
+                                case 'delete':
+                                    $subscriber->is_deleted = 1;
+                                    break;
+                                case 'restore':
+                                    $subscriber->is_deleted = 0;
+                                    break;
+                            }
+                            $subscriber->save();
+                        }
+                        $feedback = ($update == 'delete') ? 'moved to trash' : $update . 'd';
+                        return response()->json(['success' => count($subscribers) . ' subscribers successfully ' . $feedback]);
+                    } else
+                        return response()->json(['error' => 'Subscribers do not exist'], 404);
+                }
+            } catch(\Exception $e) {
+                return response()->json(['error' => 'A server error occurred.'], 500);
+            };
+        }
+        else
+            return response()->json(['error' => 'No subscribers received'], 500);
     }
 }
