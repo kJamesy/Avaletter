@@ -11,9 +11,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-//        factory(\App\MailingList::class, 50)->create();
+//        factory(\App\MailingList::class, 30)->create();
 
-        factory(\App\Subscriber::class, 200)->create()->each(function($subscriber) {
+        factory(\App\Subscriber::class, 1500)->create()->each(function($subscriber) {
             $subscriber->mailing_lists()->sync(
                 \App\MailingList::all()->random(2)
             );

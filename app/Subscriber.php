@@ -71,7 +71,7 @@ class Subscriber extends Model
     public static function getSubscribers($orderBy = 'created_at', $order = 'desc', $paginate = 1000, $mailingList = 0, $trash = 0)
     {
         if ( $mailingList )
-            return static::whereHas('mailing_lists', function($query) use($mailingList) {
+            return static::with('mailing_lists')->whereHas('mailing_lists', function($query) use($mailingList) {
                 $query->where('mailing_lists.id', $mailingList);
             })->where('is_deleted', $trash)->orderBy($orderBy, $order)->paginate($paginate);
         else

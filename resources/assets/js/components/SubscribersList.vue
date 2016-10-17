@@ -1,5 +1,14 @@
 <template>
-    <div class="subscribers-list" v-cloak>
+    <div class="subscribers-list" v-if="successfulFetch" v-cloak>
+        <div class="clearfix" v-if="mailingLists.length" style="margin: 20px 0;">
+            <label for="select-mlist">Mailing List</label>
+            <select v-model="mList" id="select-mlist">
+                <option value="0">All</option>
+                <option v-for="option in mailingLists" v-bind:value="option.id">
+                    {{ option.name }}
+                </option>
+            </select>
+        </div>
         <div style="float: left; margin: 20px 0;" v-if="selected.length">
             <label for="quick-edit">Quick Edit</label>
             <select v-model="quickEdit" id="quick-edit">
@@ -61,18 +70,20 @@
         },
         data() {
             return {
-                mList: this.$route.params.mList,
+                mList: this.$route.params.mList ? this.$route.params.mList : 0,
+                mailingList: null,
+                mailingLists: [],
                 subscribers: [],
                 orderToggle: ( userSubscribersSettings.order && userSubscribersSettings.order == 'asc' ) ? 1 : -1,
                 orderAttr: ( userSubscribersSettings.order_by && userSubscribersSettings.order_by.length ) ? userSubscribersSettings.order_by : 'updated_at',
                 defaultOrderAttr: 'updated_at',
                 pagination: {
                     total: 0,
-                    per_page: ( userSubscribersSettings.paginate && userSubscribersSettings.paginate.length ) ? userSubscribersSettings.paginate : 25,
+                    per_page: ( userSubscribersSettings.paginate && userSubscribersSettings.paginate.length ) ? +userSubscribersSettings.paginate : 25,
                     current_page: 1,
                     last_page: 0,
                     from: 1,
-                    to: ( userSubscribersSettings.paginate && userSubscribersSettings.paginate.length ) ? userSubscribersSettings.paginate : 25
+                    to: ( userSubscribersSettings.paginate && userSubscribersSettings.paginate.length ) ? +userSubscribersSettings.paginate : 25
                 },
                 paginationOptions: {
                     offset: 5,
@@ -92,7 +103,8 @@
                 ],
                 quickEdit: '',
                 subscriberIds: [],
-                selected: []
+                selected: [],
+                successfulFetch: false
             }
         },
         computed: {
@@ -128,26 +140,33 @@
                 progress.start();
 
                 vm.$http.get(vm.resourceUrl, {params : params}).then(function(response) {
-                    if ( response.data && response.data.data && response.data.data.length ) {
-                        vm.subscribers = response.data.data;
+                    vm.mailingList = response.data.mailing_list;
+                    if ( response.data.mailing_lists && response.data.mailing_lists.length ) {
+                        vm.$set(vm, 'mailingLists', response.data.mailing_lists);
+                    }
+                    var subscribers = response.data.subscribers;
+
+                    if ( subscribers && subscribers.data && subscribers.data.length ) {
+                        vm.subscribers = subscribers.data;
                         vm.orderAttr = orderBy;
                         vm.orderToggle = order;
 
                         vm.$set(vm, 'pagination', {
-                            total: response.data.total,
-                            per_page: response.data.per_page,
-                            current_page: response.data.current_page,
-                            last_page: response.data.last_page,
-                            from: response.data.from,
-                            to: response.data.to
+                            total: subscribers.total,
+                            per_page: subscribers.per_page,
+                            current_page: subscribers.current_page,
+                            last_page: subscribers.last_page,
+                            from: subscribers.from,
+                            to: subscribers.to
                         });
 
                         vm.subscriberIds = [];
-                        _.forEach(response.data.data, function(subscriber) {
+                        _.forEach(subscribers.data, function(subscriber) {
                            vm.subscriberIds.push(subscriber.id);
                         });
 
                         progress.finish();
+                        vm.successfulFetch = true;
                     }
                     else {
                         swal('Computer says no', "You don't have any subscribers yet. Please add some", 'error');
@@ -273,6 +292,27 @@
                         else
                             vm.quickEdit = '';
                     });
+                }
+            },
+            '$route'(to) {
+                if ( to.path == '/' && +this.mList > 0 )
+                    this.$set(this, 'mList', 0);
+
+                this.fetchSubscribers();
+            },
+            mList(newId, oldId) {
+                if ( +newId !== +oldId ) {
+                    if ( +newId == 0 ) {
+                        this.$router.push({
+                            name: 'subscribers.index',
+                        });
+                    }
+                    else {
+                        this.$router.push({
+                            name: 'subscribers.mailing_list',
+                            params: { mList: +newId }
+                        });
+                    }
                 }
             }
         },

@@ -63,7 +63,11 @@ class SubscriberController extends Controller
             $getDeleted = $request->trash ? 1 : 0;
             $getInMailingList = (int) $request->mailingList ?: 0;
 
-            return Subscriber::getSubscribers($orderBy, $order, $paginate, $getInMailingList, $getDeleted);
+            $mailing_list = $getInMailingList ? MailingList::getMailingList($getInMailingList) : null;
+            $mailing_lists = MailingList::getMailingListsList();
+            $subscribers = Subscriber::getSubscribers($orderBy, $order, $paginate, $getInMailingList, $getDeleted);
+
+            return response()->json(compact('mailing_list', 'mailing_lists', 'subscribers'));
         }
     }
 

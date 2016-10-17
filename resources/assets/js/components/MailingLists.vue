@@ -62,11 +62,11 @@
                 defaultOrderAttr: 'updated_at',
                 pagination: {
                     total: 25,
-                    per_page: ( userMailingListsSettings.paginate && userMailingListsSettings.paginate.length) ? userMailingListsSettings.paginate : 25,
+                    per_page: ( userMailingListsSettings.paginate && userMailingListsSettings.paginate.length) ? +userMailingListsSettings.paginate : 25,
                     current_page: 1,
                     last_page: 1,
                     from: 1,
-                    to: 25
+                    to: ( userMailingListsSettings.paginate && userMailingListsSettings.paginate.length) ? +userMailingListsSettings.paginate : 25,
                 },
                 paginationOptions: {
                     offset: 5,

@@ -1,5 +1,8 @@
 <template>
-    <div class="subscribers-trash" v-cloak>
+    <div class="subscribers-trash" v-if="successfulFetch" v-cloak>
+        <div class="clearfix">
+            <h3>Subscribers in Trash</h3>
+        </div>
         <div style="float: left; margin: 20px 0;" v-if="selected.length">
             <label for="quick-edit">Quick Edit</label>
             <select v-model="quickEdit" id="quick-edit">
@@ -66,11 +69,11 @@
                 defaultOrderAttr: 'updated_at',
                 pagination: {
                     total: 0,
-                    per_page: ( userSubscribersSettings.paginate && userSubscribersSettings.paginate.length ) ? userSubscribersSettings.paginate : 25,
+                    per_page: ( userSubscribersSettings.paginate && userSubscribersSettings.paginate.length ) ? +userSubscribersSettings.paginate : 25,
                     current_page: 1,
                     last_page: 0,
                     from: 1,
-                    to: ( userSubscribersSettings.paginate && userSubscribersSettings.paginate.length ) ? userSubscribersSettings.paginate : 25
+                    to: ( userSubscribersSettings.paginate && userSubscribersSettings.paginate.length ) ? +userSubscribersSettings.paginate : 25
                 },
                 paginationOptions: {
                     offset: 5,
@@ -91,7 +94,8 @@
                 ],
                 quickEdit: '',
                 subscriberIds: [],
-                selected: []
+                selected: [],
+                successfulFetch: false
             }
         },
         computed: {
@@ -127,29 +131,31 @@
                 progress.start();
 
                 vm.$http.get(vm.resourceUrl, {params : params}).then(function(response) {
-                    if ( response.data && response.data.data && response.data.data.length ) {
-                        vm.subscribers = response.data.data;
+                    var subscribers = response.data.subscribers;
+                    if ( subscribers && subscribers.data && subscribers.data.length ) {
+                        vm.subscribers = subscribers.data;
                         vm.orderAttr = orderBy;
                         vm.orderToggle = order;
 
                         vm.$set(vm, 'pagination', {
-                            total: response.data.total,
-                            per_page: response.data.per_page,
-                            current_page: response.data.current_page,
-                            last_page: response.data.last_page,
-                            from: response.data.from,
-                            to: response.data.to
+                            total: subscribers.total,
+                            per_page: subscribers.per_page,
+                            current_page: subscribers.current_page,
+                            last_page: subscribers.last_page,
+                            from: subscribers.from,
+                            to: subscribers.to
                         });
 
                         vm.subscriberIds = [];
-                        _.forEach(response.data.data, function(subscriber) {
-                           vm.subscriberIds.push(subscriber.id);
+                        _.forEach(subscribers.data, function(subscriber) {
+                            vm.subscriberIds.push(subscriber.id);
                         });
 
                         progress.finish();
+                        vm.successfulFetch = true;
                     }
                     else {
-                        swal('Computer says no', "You don't have any subscribers yet. Please add some", 'error');
+                        swal('Computer says Yes!', "Your recycle bin is nice and clean. Well done you!", 'info');
                         progress.finish();
                     }
                 }, function(error) {

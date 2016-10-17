@@ -35,6 +35,16 @@ class MailingList extends Model
     }
 
     /**
+     *
+     * @param $id
+     * @return mixed
+     */
+    public static function getMailingList($id)
+    {
+        return static::find($id);
+    }
+
+    /**
      * Get mailing list resource
      * @param string $orderBy
      * @param string $order

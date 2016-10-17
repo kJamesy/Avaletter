@@ -1,5 +1,8 @@
 <template>
     <div class="subscribers-edit">
+        <div class="clearfix">
+            <h3>Edit Subscriber</h3>
+        </div>
         <form v-on:submit.prevent='updateSubscriber'>
             <div class="form-group" v-bind:class="validation.first_name ? 'has-error' : ''">
                 <label for="first_name">First Name <span v-if="validation.first_name" class="text-danger">{{ validation.first_name }}</span></label>
