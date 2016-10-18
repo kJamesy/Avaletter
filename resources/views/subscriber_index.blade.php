@@ -7,6 +7,10 @@
             order: '{{ $settings['subscribers_order'] }}',
             paginate: '{{ $settings['subscribers_paginate'] }}',
         };
+        window.subscribersLinks = {
+            baseUrl: '{{ route('subscribers.index') }}',
+            baseUri: '{{ explode( $_SERVER['SERVER_NAME'], route('subscribers.index'))[1] }}',
+        }
     </script>
 @endsection
 
@@ -17,7 +21,6 @@
                 @include('layouts.sidebar')
             </div>
             <div class="col-md-10">
-
                 <subscribers>
 
                 </subscribers>

@@ -43,21 +43,23 @@ import SubscribersNew from  './components/SubscribersNew.vue';
 import SubscribersEdit from './components/SubscribersEdit.vue';
 import SubscribersTrash from './components/SubscribersTrash.vue';
 
-var router = new VueRouter({
-    mode: 'hash',
-    base: 'subscribers',
-    linkActiveClass: 'active',
-    routes: [
-        { path: '/', name: 'subscribers.index', component: SubscribersList },
-        { path: '/:mList(\\d+)/mailing-list', name: 'subscribers.mailing_list', component: SubscribersList },
-        { path: '/new', name: 'subscribers.new', component: SubscribersNew },
-        { path: '/edit/:id(\\d+)', name: 'subscribers.edit', component: SubscribersEdit },
-        { path: '/trash', name: 'subscribers.trash', component: SubscribersTrash },
-        { path: '*', redirect: { name: 'subscribers.index' } }
-    ]
-});
 
 if ( $('#app-subscribers').length ) {
+    var router = new VueRouter({
+        mode: 'history',
+        base: subscribersLinks.baseUri,
+        linkActiveClass: 'active',
+        routes: [
+            { path: '/all', name: 'subscribers.index', component: SubscribersList },
+            { path: '/:id(\\d+)/edit', name: 'subscribers.edit', component: SubscribersEdit },
+            { path: '/:mList(\\d+)/mailing-list', name: 'subscribers.mailing_list', component: SubscribersList },
+            { path: '/new', name: 'subscribers.new', component: SubscribersNew },
+            { path: '/batch-import', name: 'subscribers.import', component: SubscribersNew },
+            { path: '/trash', name: 'subscribers.trash', component: SubscribersTrash },
+            { path: '*', redirect: { name: 'subscribers.index' } }
+        ]
+    });
+
     new Vue({
         el: '#app-subscribers',
         components: {

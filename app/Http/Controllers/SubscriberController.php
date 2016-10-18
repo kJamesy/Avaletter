@@ -220,4 +220,5 @@ class SubscriberController extends Controller
         else
             return response()->json(['error' => 'No subscribers received'], 500);
     }
+    
 }

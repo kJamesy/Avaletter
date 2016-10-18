@@ -4,7 +4,7 @@ namespace App\Helpers;
 
 use Illuminate\Support\Facades\Validator;
 
-class AvaLetter
+class Ava
 {
 
 }

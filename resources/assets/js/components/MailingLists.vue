@@ -33,7 +33,7 @@
             <tbody>
                 <tr v-for="mList in orderedMLists">
                     <td>{{ mList.name }}</td>
-                    <td><a class="btn btn-default btn-xs" v-bind:href="'subscribers#' + mList.id + '/mailing-list'">{{ mList.subscribers_count }}</a></td>
+                    <td><a class="btn btn-default btn-xs" v-bind:href="subscribersBaseUrl + '/' + mList.id + '/mailing-list'">{{ mList.subscribers_count }}</a></td>
                     <td>{{ mList.created_at | localTime }}</td>
                     <td>{{ mList.updated_at | localTime }}</td>
                     <td><i class="fa fa-pencil-square-o btn btn-default btn-xs" v-on:click="fetchMList(mList)"></i></td>
@@ -49,7 +49,8 @@
     export default {
         mounted() {
             this.$nextTick(function() {
-                this.resourceUrl = 'mailing-lists';
+                this.resourceUrl = mailingListsLinks.baseUri;
+                this.subscribersBaseUrl = mailingListsLinks.subscribersBaseUri;
                 this.fetchMLists();
             });
         },

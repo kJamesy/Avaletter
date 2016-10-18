@@ -7,6 +7,11 @@
             order: '{{ $settings['mailing_lists_order'] }}',
             paginate: '{{ $settings['mailing_lists_paginate'] }}',
         };
+        window.mailingListsLinks = {
+            baseUrl: '{{ route('mailing-lists.index') }}',
+            baseUri: '{{ explode( $_SERVER['SERVER_NAME'], route('mailing-lists.index'))[1] }}',
+            subscribersBaseUri: '{{ explode( $_SERVER['SERVER_NAME'], route('subscribers.index'))[1] }}'
+        }
     </script>
 @endsection
 

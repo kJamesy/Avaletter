@@ -2,6 +2,7 @@
     <div class="subscribers-nav">
         <router-link v-bind:to="{ name: 'subscribers.index' }" exact>All Subscribers</router-link> |
         <router-link v-bind:to="{ name: 'subscribers.new' }">New Subscriber</router-link> |
+        <router-link v-bind:to="{ name: 'subscribers.import' }">Batch Import Subscribers</router-link> |
         <router-link v-bind:to="{ name: 'subscribers.trash' }">Trash</router-link>
     </div>
 </template>
@@ -9,7 +10,7 @@
     export default{
         data(){
             return{
-                msg:'Subscribers Nav'
+                batchImportLink: subscribersLinks.batchImport
             }
         }
     }

@@ -39,7 +39,7 @@
     export default{
         mounted() {
             this.$nextTick(function() {
-                this.resourceUrl = 'subscribers';
+                this.resourceUrl = subscribersLinks.baseUri;
                 this.createSubscriber();
             });
         },
