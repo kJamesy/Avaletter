@@ -1,7 +1,8 @@
 <template>
     <div class="subscribers-trash" v-if="successfulFetch" v-cloak>
         <div class="clearfix">
-            <h3>Subscribers in Trash</h3>
+            <h3 style="display: inline-block;">Subscribers in Trash</h3>
+            &nbsp; <a v-on:click.prevent="exportSubscribers" href="#" title="Export All"><i class="fa fa-arrow-circle-down"></i></a>
         </div>
         <div style="float: left; margin: 20px 0;" v-if="selected.length">
             <label for="quick-edit">Quick Edit</label>
@@ -228,6 +229,10 @@
                     });
 
                 }
+            },
+            exportSubscribers() {
+                var vm = this;
+                window.location = vm.resourceUrl + '/export?trash=1';
             },
             changeSort(attr) {
                 var orderToggle = ( this.orderAttr == attr ) ? this.orderToggle * -1 : 1;

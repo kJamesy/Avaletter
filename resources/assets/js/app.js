@@ -40,6 +40,7 @@ if ( $('#app-mailing-lists').length ) {
 import Subscribers from  './components/Subscribers.vue';
 import SubscribersList from './components/SubscribersList.vue';
 import SubscribersNew from  './components/SubscribersNew.vue';
+import SubscribersImport from  './components/SubscribersImport.vue';
 import SubscribersEdit from './components/SubscribersEdit.vue';
 import SubscribersTrash from './components/SubscribersTrash.vue';
 
@@ -54,7 +55,7 @@ if ( $('#app-subscribers').length ) {
             { path: '/:id(\\d+)/edit', name: 'subscribers.edit', component: SubscribersEdit },
             { path: '/:mList(\\d+)/mailing-list', name: 'subscribers.mailing_list', component: SubscribersList },
             { path: '/new', name: 'subscribers.new', component: SubscribersNew },
-            { path: '/batch-import', name: 'subscribers.import', component: SubscribersNew },
+            { path: '/batch-import', name: 'subscribers.import', component: SubscribersImport },
             { path: '/trash', name: 'subscribers.trash', component: SubscribersTrash },
             { path: '*', redirect: { name: 'subscribers.index' } }
         ]

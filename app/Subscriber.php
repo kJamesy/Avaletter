@@ -60,7 +60,7 @@ class Subscriber extends Model
     }
 
     /**
-     * Get all subscribers
+     * Get subscribers
      * @param string $orderBy
      * @param string $order
      * @param int $paginate
@@ -76,5 +76,24 @@ class Subscriber extends Model
             })->where('is_deleted', $trash)->orderBy($orderBy, $order)->paginate($paginate);
         else
             return static::with('mailing_lists')->where('is_deleted', $trash)->orderBy($orderBy, $order)->paginate($paginate);
+    }
+
+
+    /**
+     * Get all subscribers
+     * @param string $orderBy
+     * @param string $order
+     * @param int $mailingList
+     * @param int $trash
+     * @return mixed
+     */
+    public static function getAllSubscribers($orderBy = 'created_at', $order = 'asc', $mailingList = 0, $trash = 0)
+    {
+        if ( $mailingList )
+            return static::with('mailing_lists')->whereHas('mailing_lists', function($query) use($mailingList) {
+                $query->where('mailing_lists.id', $mailingList);
+            })->where('is_deleted', $trash)->orderBy($orderBy, $order)->get();
+        else
+            return static::with('mailing_lists')->where('is_deleted', $trash)->orderBy($orderBy, $order)->get();
     }
 }

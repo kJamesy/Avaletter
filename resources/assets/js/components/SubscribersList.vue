@@ -8,6 +8,7 @@
                     {{ option.name }}
                 </option>
             </select>
+            &nbsp; <a v-on:click.prevent="exportSubscribers" href="#" title="Export All"><i class="fa fa-arrow-circle-down"></i></a>
         </div>
         <div style="float: left; margin: 20px 0;" v-if="selected.length">
             <label for="quick-edit">Quick Edit</label>
@@ -169,8 +170,14 @@
                         vm.successfulFetch = true;
                     }
                     else {
-                        swal('Computer says no', "You don't have any subscribers yet. Please add some", 'error');
-                        progress.finish();
+                        swal({ title: "Computer says no", text: "You don't have any subscribers yet. Please add some", type: 'error', animation: 'slide-from-top'}, function() {
+                            if ( +vm.mList > 0 ) {
+                                vm.$router.push({
+                                    name: 'subscribers.index',
+                                });
+                            }
+                        });
+                        progress.fail();
                     }
                 }, function(error) {
                     swal('An Error Occurred', 'Please refresh the page and try again.', 'error');
@@ -226,7 +233,6 @@
                             progress.finish();
                             vm.quickEdit = '';
                             swal({ title: "Success", text: response.data.success, type: 'success', animation: 'slide-from-bottom'}, function() {
-
                                 if ( action != 'delete' ) { //Force them to see what they did!
                                     vm.orderAttr = 'updated_at';
                                     vm.orderToggle = -1;
@@ -237,11 +243,15 @@
                     }, function(error) {
                         progress.fail();
                         vm.quickEdit = '';
-                        var message = ( error && error.length ) ? error : 'Please refresh the page and try again.';
+                        var message = ( error.data && error.data.error ) ? error.data.error : 'Please refresh the page and try again.';
                         swal('An Error Occurred', message, 'error');
                     });
 
                 }
+            },
+            exportSubscribers() {
+                var vm = this;
+                window.location = vm.resourceUrl + '/export?mailing_list=' + vm.mList;
             },
             changeSort(attr) {
                 var orderToggle = ( this.orderAttr == attr ) ? this.orderToggle * -1 : 1;
@@ -295,7 +305,7 @@
                 }
             },
             '$route'(to) {
-                if ( to.path == '/' && +this.mList > 0 )
+                if ( to.name == 'subscribers.index' && +this.mList > 0 )
                     this.$set(this, 'mList', 0);
 
                 this.fetchSubscribers();

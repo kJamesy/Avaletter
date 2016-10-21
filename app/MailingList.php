@@ -53,7 +53,9 @@ class MailingList extends Model
      */
     public static function getMailingLists($orderBy = 'created_at', $order = 'desc', $paginate = 1000)
     {
-        return static::withCount('subscribers')->orderBy($orderBy, $order)->paginate($paginate);
+        return static::withCount(['subscribers' => function($query) {
+            $query->where('subscribers.is_deleted', 0);
+        }])->orderBy($orderBy, $order)->paginate($paginate);
     }
 
     /**
@@ -63,5 +65,19 @@ class MailingList extends Model
     public static function getMailingListsList()
     {
         return static::orderBy('name')->get(['id', 'name']);
+    }
+
+    /**
+     * Get a list of mailing lists that have at least one subscriber attached
+     * @return mixed
+     */
+    public static function getAttachedMailingListsList($includeDeleted = false)
+    {
+        if ( $includeDeleted )
+            return static::has('subscribers', '>=', 1)->orderBy('name')->get(['id', 'name']);
+        else
+            return static::whereHas('subscribers', function($query) {
+                $query->where('subscribers.is_deleted', 0);
+            })->orderBy('name')->get(['id', 'name']);
     }
 }

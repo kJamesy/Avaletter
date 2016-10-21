@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\AvaHelper\ExcelExporter;
+use App\AvaHelper\ExcelReader;
 use App\MailingList;
 use App\Subscriber;
 use App\User;
@@ -13,6 +15,9 @@ class SubscriberController extends Controller
     public $paginate;
     public $orderCriteria;
     public $orderByFields;
+    public $allowedFileExts;
+    public $excelImportColumns;
+    public $uploadStoragePath;
 
     /**
      * SubscriberController constructor.
@@ -24,6 +29,9 @@ class SubscriberController extends Controller
         $this->paginate = 25;
         $this->orderByFields = ['first_name', 'last_name', 'email', 'active', 'created_at', 'updated_at'];
         $this->orderCriteria = ['asc', 'desc'];
+        $this->allowedFileExts = ['xlt', 'xls', 'csv'];
+        $this->excelImportColumns = ['first_name' => 'first_name', 'last_name' => 'last_name', 'email' => 'email'];
+        $this->uploadStoragePath = storage_path('app/uploads');
     }
 
     /**
@@ -64,7 +72,7 @@ class SubscriberController extends Controller
             $getInMailingList = (int) $request->mailingList ?: 0;
 
             $mailing_list = $getInMailingList ? MailingList::getMailingList($getInMailingList) : null;
-            $mailing_lists = MailingList::getMailingListsList();
+            $mailing_lists = MailingList::getAttachedMailingListsList();
             $subscribers = Subscriber::getSubscribers($orderBy, $order, $paginate, $getInMailingList, $getDeleted);
 
             return response()->json(compact('mailing_list', 'mailing_lists', 'subscribers'));
@@ -87,19 +95,120 @@ class SubscriberController extends Controller
      */
     public function store(Request $request)
     {
-        $this->validate($request, $this->rules);
+        if ( ! $request->isImporting ) {
 
-        $subscriber = new Subscriber();
-        $subscriber->first_name = trim($request->first_name);
-        $subscriber->last_name = trim($request->last_name);
-        $subscriber->email = strtolower(trim($request->email));
-        $subscriber->active = $request->active ? 1 : 0;
-        $subscriber->save();
+            $this->validate($request, $this->rules);
 
-        if ( $request->has('mailing_lists') && is_array($request->mailing_lists) && $request->mailing_lists )
-            $subscriber->mailing_lists()->attach($request->mailing_lists);
+            $subscriber = new Subscriber();
+            $subscriber->first_name = trim($request->first_name);
+            $subscriber->last_name = trim($request->last_name);
+            $subscriber->email = strtolower(trim($request->email));
+            $subscriber->active = $request->active ? 1 : 0;
+            $subscriber->save();
 
-        return $subscriber;
+            if ($request->has('mailing_lists') && is_array($request->mailing_lists) && $request->mailing_lists)
+                $subscriber->mailing_lists()->attach($request->mailing_lists);
+
+            return $subscriber;
+        }
+        else {
+            $file = $request->file('upload');
+
+            if ( ! $file || ! $file->isValid() )
+                return response()->json(['file' => ['Your file isn\'t valid. Please try again with a different file.']], 422);
+
+            $ext = pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION);
+
+            if ( ! in_array($ext, $this->allowedFileExts))
+                return response()->json(['file' => ['Your file extension is not allowed. Please use a valid excel or CSV file.']], 422);
+
+            $fileName = time() . ".$ext";
+            $safeFileName = str_replace('.', '_', $fileName);
+            $storageDirectory = rtrim(explode('app', $this->uploadStoragePath)[1], '/');
+            $file->storeAs($storageDirectory, $fileName);
+            $filePath = "$this->uploadStoragePath/$fileName";
+
+            $excelReader = new ExcelReader($fileName, $safeFileName, $filePath, $this->excelImportColumns, $this->rules);
+            $excelResults = $excelReader->getResults();
+
+            if ( $excelResults )
+                return response()->json(['success' => "Import successfully processed", 'badRows' => $excelResults->badRows, 'rowsCount' => $excelResults->rowsNum, 'fileName' => $fileName]);
+            else
+                return response()->json(['file_does_not_exist' => 'Please try the import again.'], 500);
+        }
+    }
+
+    /**
+     * Finalise the import and save the records - or cancel
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function finaliseImport(Request $request)
+    {
+        $active = (int) $request->active;
+        $mailing_lists = (array) $request->mailing_lists;
+        $fileName = $request->fileName;
+        $safeFileName = $fileName ? str_replace('.', '_', $fileName) : null;
+        $filePath = $fileName ? "$this->uploadStoragePath/$fileName" : '';
+
+        if ( strtolower($request->action) == 'cancel' ) {
+            if ( $safeFileName ) {
+                unlink($filePath);
+                cache()->forget("resultsOfImport$safeFileName");
+            }
+
+            return response()->json(['cancellation' => "Import successfully cancelled"]);
+        }
+        elseif ( strtolower($request->action) == 'proceed' ) {
+            $excelReader = new ExcelReader($fileName, $safeFileName, $filePath, $this->excelImportColumns, $this->rules);
+            $excelResults = $excelReader->getResults();
+
+            if ( $safeFileName ) {
+                unlink($filePath);
+                cache()->forget("resultsOfImport$safeFileName");
+            }
+
+            $failedNum = 0;
+            $succeededNum = 0;
+
+            if ( $excelResults ) {
+                if ( count($excelResults->goodOnes) ) {
+                    foreach ($excelResults->goodOnes as $record ) {
+                        $validator = validator()->make( (array) $record, $this->rules);
+
+                        if ( $validator->fails() ) {
+                            $exists = Subscriber::where('email', $record->email)->first(); //Attempt to find an existing subscriber and just attach them to the mailing lists
+                            if ( $exists ) {
+                                if ( $mailing_lists )
+                                    $exists->mailing_lists()->sync($mailing_lists);
+                            }
+
+                            $failedNum++;
+                        }
+                        else {
+                            $subscriber = new Subscriber();
+                            $subscriber->first_name = $record->first_name;
+                            $subscriber->last_name = $record->last_name;
+                            $subscriber->email = $record->email;
+                            $subscriber->active = $active;
+                            $subscriber->save();
+
+                            if ( $mailing_lists )
+                                $subscriber->mailing_lists()->sync($mailing_lists);
+
+                            $succeededNum++;
+                        }
+                    }
+                    return response()->json(['success' => "Imported subscribers successfully saved.", 'failedNum' => $failedNum, 'succeededNum' => $succeededNum]);
+                }
+                else
+                    return response()->json(['no_good_records' => 'None of the rows in the file passed validation. Please check the rows in the file and try again.'], 422);
+            }
+            else
+                return response()->json(['file_does_not_exist' => 'Please try the import again.'], 500);
+        }
+        else
+            return response()->json(['error' => 'Please try the import again.'], 500);
     }
 
     /**
@@ -215,10 +324,45 @@ class SubscriberController extends Controller
                 }
             } catch(\Exception $e) {
                 return response()->json(['error' => 'A server error occurred.'], 500);
-            };
+            }
         }
         else
             return response()->json(['error' => 'No subscribers received'], 500);
     }
-    
+
+    /**
+     * Export to Excel and prompt download
+     * @param Request $request
+     */
+    public function export(Request $request)
+    {
+        $mListId = (int) $request->mailing_list;
+        $trash = (int) $request->trash;
+
+        $subscribers = [];
+        $fileName = time();
+
+        if ( $trash ) {
+            $subscribers = Subscriber::getAllSubscribers('created_at', 'asc', 0, 1);
+            $fileName .= '-Deleted-Subscribers';
+        }
+        elseif ( $mListId ) {
+            $mailing_list = MailingList::getMailingList($mListId);
+
+            if ( $mailing_list )
+                $fileName .= '-Mailing-List-' . ucwords(str_slug($mailing_list->name), '-');
+            else
+                $fileName .= '-Mailing-List-Non-Existent';
+
+            $subscribers = Subscriber::getAllSubscribers('created_at', 'asc', $mListId);
+        }
+        else {
+            $subscribers = Subscriber::getAllSubscribers();
+            $fileName .= '-All-Subscribers-Except-Deleted';
+        }
+
+        $exporter = new ExcelExporter($subscribers, $fileName);
+        $exporter->generateSubscribersExport();
+    }
+
 }
