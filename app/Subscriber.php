@@ -3,9 +3,12 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Scout\Searchable;
 
 class Subscriber extends Model
 {
+    use Searchable;
+
     /**
      * Database table
      * @var string
@@ -78,7 +81,6 @@ class Subscriber extends Model
             return static::with('mailing_lists')->where('is_deleted', $trash)->orderBy($orderBy, $order)->paginate($paginate);
     }
 
-
     /**
      * Get all subscribers
      * @param string $orderBy
@@ -95,5 +97,29 @@ class Subscriber extends Model
             })->where('is_deleted', $trash)->orderBy($orderBy, $order)->get();
         else
             return static::with('mailing_lists')->where('is_deleted', $trash)->orderBy($orderBy, $order)->get();
+    }
+
+    /**
+     * Get specified subscribers
+     * @param $ids
+     * @param string $orderBy
+     * @param string $order
+     * @return mixed
+     */
+    public static function getSpecifiedSubscribers($ids, $orderBy = 'created_at', $order = 'asc')
+    {
+        return static::with('mailing_lists')->whereIn('id', $ids)->orderBy($orderBy, $order)->get();
+    }
+
+    /**
+     * Get search results
+     * @param $search
+     * @param int $paginate
+     * @param int $trash
+     * @return mixed
+     */
+    public static function getSearchResults($search, $paginate = 1000, $trash = 0)
+    {
+        return static::search($search)->where('is_deleted', $trash)->paginate($paginate);
     }
 }

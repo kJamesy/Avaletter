@@ -69,11 +69,20 @@ class SubscriberController extends Controller
                 User::cacheSettings($user->id, ['subscribers_order_by', 'subscribers_order', 'subscribers_paginate'], [$orderBy, $order, $paginate]);
 
             $getDeleted = $request->trash ? 1 : 0;
+            $search = strtolower($request->search);
             $getInMailingList = (int) $request->mailingList ?: 0;
+
+            if ( $search ) {
+                $subscribers = Subscriber::getSearchResults($search, $paginate, $getDeleted);
+                foreach( $subscribers as $subscriber )
+                    $subscriber->mailing_lists = $subscriber->mailing_lists; //Don't ask, man. Lazy eager loading breaks my pagination. This is the only way
+            }
+            else
+                $subscribers = Subscriber::getSubscribers($orderBy, $order, $paginate, $getInMailingList, $getDeleted);
 
             $mailing_list = $getInMailingList ? MailingList::getMailingList($getInMailingList) : null;
             $mailing_lists = MailingList::getAttachedMailingListsList();
-            $subscribers = Subscriber::getSubscribers($orderBy, $order, $paginate, $getInMailingList, $getDeleted);
+
 
             return response()->json(compact('mailing_list', 'mailing_lists', 'subscribers'));
         }
@@ -338,31 +347,37 @@ class SubscriberController extends Controller
     {
         $mListId = (int) $request->mailing_list;
         $trash = (int) $request->trash;
+        $subIds = (array) $request->subIds;
 
         $subscribers = [];
         $fileName = time();
 
-        if ( $trash ) {
-            $subscribers = Subscriber::getAllSubscribers('created_at', 'asc', 0, 1);
-            $fileName .= '-Deleted-Subscribers';
-        }
-        elseif ( $mListId ) {
-            $mailing_list = MailingList::getMailingList($mListId);
-
-            if ( $mailing_list )
-                $fileName .= '-Mailing-List-' . ucwords(str_slug($mailing_list->name), '-');
-            else
-                $fileName .= '-Mailing-List-Non-Existent';
-
-            $subscribers = Subscriber::getAllSubscribers('created_at', 'asc', $mListId);
+        if ( count($subIds) ) {
+            $subscribers = Subscriber::getSpecifiedSubscribers($subIds, 'created_at', 'asc');
+            $fileName .= '-Specified-Subscribers';
         }
         else {
-            $subscribers = Subscriber::getAllSubscribers();
-            $fileName .= '-All-Subscribers-Except-Deleted';
+            if ( $trash ) {
+                $subscribers = Subscriber::getAllSubscribers('created_at', 'asc', 0, 1);
+                $fileName .= '-Deleted-Subscribers';
+            }
+            elseif ( $mListId ) {
+                $mailing_list = MailingList::getMailingList($mListId);
+
+                if ( $mailing_list )
+                    $fileName .= '-Mailing-List-' . ucwords(str_slug($mailing_list->name), '-');
+                else
+                    $fileName .= '-Mailing-List-Non-Existent';
+
+                $subscribers = Subscriber::getAllSubscribers('created_at', 'asc', $mListId);
+            }
+            else {
+                $subscribers = Subscriber::getAllSubscribers();
+                $fileName .= '-All-Subscribers-Except-Deleted';
+            }
         }
 
         $exporter = new ExcelExporter($subscribers, $fileName);
         $exporter->generateSubscribersExport();
     }
-
 }

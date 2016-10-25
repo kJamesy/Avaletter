@@ -1,14 +1,21 @@
 <template>
     <div class="subscribers-list" v-if="successfulFetch" v-cloak>
-        <div class="clearfix" v-if="mailingLists.length" style="margin: 20px 0;">
-            <label for="select-mlist">Mailing List</label>
-            <select v-model="mList" id="select-mlist">
-                <option value="0">All</option>
-                <option v-for="option in mailingLists" v-bind:value="option.id">
-                    {{ option.name }}
-                </option>
-            </select>
-            &nbsp; <a v-on:click.prevent="exportSubscribers" href="#" title="Export All"><i class="fa fa-arrow-circle-down"></i></a>
+        <div class="clearfix" style="margin: 20px 0;">
+            <span v-if="mailingLists.length && ! searching">
+                <label for="select-mlist">Mailing List</label>
+                <select v-model="mList" id="select-mlist">
+                    <option value="0">All</option>
+                    <option v-for="option in mailingLists" v-bind:value="option.id">
+                        {{ option.name }}
+                    </option>
+                </select>
+            </span>
+            <form v-if="searching" v-on:submit.prevent="doSearch">
+                <input type="text" v-model.trim="search" placeholder="Search" />
+                &nbsp; <a v-on:click.prevent="cancelSearch" href="" title="Cancel Search" v-if="searching"><i class="fa fa-ban"></i></a>
+            </form>
+            &nbsp; <a v-on:click.prevent="exportSubscribers" href="" title="Export All" v-if="! searching"><i class="fa fa-arrow-circle-down"></i></a>
+            &nbsp; <a v-on:click.prevent="initiateSearch" href="" title="Search" v-if="! searching"><i class="fa fa-search"></i></a>
         </div>
         <div style="float: left; margin: 20px 0;" v-if="selected.length">
             <label for="quick-edit">Quick Edit</label>
@@ -66,6 +73,7 @@
         mounted() {
             this.$nextTick(function() {
                 this.resourceUrl = subscribersLinks.baseUri;
+                this.pagination = this.getInitialPagination();
                 this.fetchSubscribers();
             });
         },
@@ -78,14 +86,7 @@
                 orderToggle: ( userSubscribersSettings.order && userSubscribersSettings.order == 'asc' ) ? 1 : -1,
                 orderAttr: ( userSubscribersSettings.order_by && userSubscribersSettings.order_by.length ) ? userSubscribersSettings.order_by : 'updated_at',
                 defaultOrderAttr: 'updated_at',
-                pagination: {
-                    total: 0,
-                    per_page: ( userSubscribersSettings.paginate && userSubscribersSettings.paginate.length ) ? +userSubscribersSettings.paginate : 25,
-                    current_page: 1,
-                    last_page: 0,
-                    from: 1,
-                    to: ( userSubscribersSettings.paginate && userSubscribersSettings.paginate.length ) ? +userSubscribersSettings.paginate : 25
-                },
+                pagination: {},
                 paginationOptions: {
                     offset: 5,
                     alwaysShowPrevNext: true
@@ -98,6 +99,7 @@
                 ],
                 quickEditOptions: [
                     { text: 'Select Option', value: '' },
+                    { text: 'Export', value: 'export' },
                     { text: 'Activate', value: 'activate' },
                     { text: 'Deactivate', value: 'deactivate' },
                     { text: 'Delete', value: 'delete' },
@@ -105,7 +107,9 @@
                 quickEdit: '',
                 subscriberIds: [],
                 selected: [],
-                successfulFetch: false
+                successfulFetch: false,
+                search: '',
+                searching: false
             }
         },
         computed: {
@@ -137,6 +141,9 @@
                     order: ( order == 1 ) ? 'asc' : 'desc',
                     mailingList: this.mList ? this.mList : 0
                 };
+
+                if ( vm.search.length )
+                    params.search = vm.search;
 
                 progress.start();
 
@@ -170,7 +177,9 @@
                         vm.successfulFetch = true;
                     }
                     else {
-                        swal({ title: "Computer says no", text: "You don't have any subscribers yet. Please add some", type: 'error', animation: 'slide-from-top'}, function() {
+                        var message = vm.searching ? 'Your search returned no results. Please try again with different keywords' : 'You don\'t have any subscribers yet. Please add some';
+
+                        swal({ title: "Computer says no", text: message, type: 'error', animation: 'slide-from-top'}, function() {
                             if ( +vm.mList > 0 ) {
                                 vm.$router.push({
                                     name: 'subscribers.index',
@@ -226,32 +235,48 @@
                 var progress = vm.$Progress;
 
                 if ( action.length && selected.length ) {
-                    progress.start();
 
-                    vm.$http.put(vm.resourceUrl + '/' + action + '/quick-edit', {subscribers : selected}).then(function(response) {
-                        if ( response.data && response.data.success ) {
-                            progress.finish();
+                    if ( action == 'export' ) {
+                        var urlString = '';
+
+                        _.forEach(selected, function(id, index) {
+                            var operand = index ? '&' : '?';
+                            urlString += operand + 'subIds[]=' + id;
+                        });
+
+                        window.location = this.resourceUrl + '/export' + urlString;
+                    }
+                    else {
+                        progress.start();
+
+                        vm.$http.put(vm.resourceUrl + '/' + action + '/quick-edit', {subscribers: selected}).then(function (response) {
+                            if (response.data && response.data.success) {
+                                progress.finish();
+                                vm.quickEdit = '';
+                                swal({
+                                    title: "Success",
+                                    text: response.data.success,
+                                    type: 'success',
+                                    animation: 'slide-from-bottom'
+                                }, function () {
+                                    if (action != 'delete') { //Force them to see what they did!
+                                        vm.orderAttr = 'updated_at';
+                                        vm.orderToggle = -1;
+                                    }
+                                    vm.fetchSubscribers();
+                                });
+                            }
+                        }, function (error) {
+                            progress.fail();
                             vm.quickEdit = '';
-                            swal({ title: "Success", text: response.data.success, type: 'success', animation: 'slide-from-bottom'}, function() {
-                                if ( action != 'delete' ) { //Force them to see what they did!
-                                    vm.orderAttr = 'updated_at';
-                                    vm.orderToggle = -1;
-                                }
-                                vm.fetchSubscribers();
-                            });
-                        }
-                    }, function(error) {
-                        progress.fail();
-                        vm.quickEdit = '';
-                        var message = ( error.data && error.data.error ) ? error.data.error : 'Please refresh the page and try again.';
-                        swal('An Error Occurred', message, 'error');
-                    });
-
+                            var message = ( error.data && error.data.error ) ? error.data.error : 'Please refresh the page and try again.';
+                            swal('An Error Occurred', message, 'error');
+                        });
+                    }
                 }
             },
             exportSubscribers() {
-                var vm = this;
-                window.location = vm.resourceUrl + '/export?mailing_list=' + vm.mList;
+                window.location = this.resourceUrl + '/export?mailing_list=' + this.mList;
             },
             changeSort(attr) {
                 var orderToggle = ( this.orderAttr == attr ) ? this.orderToggle * -1 : 1;
@@ -282,6 +307,32 @@
                 }
 
                 return mListsString;
+            },
+            getInitialPagination() {
+                return {
+                    total: 0,
+                    per_page: ( userSubscribersSettings.paginate && userSubscribersSettings.paginate.length ) ? +userSubscribersSettings.paginate : 25,
+                    current_page: 1,
+                    last_page: 0,
+                    from: 1,
+                    to: ( userSubscribersSettings.paginate && userSubscribersSettings.paginate.length ) ? +userSubscribersSettings.paginate : 25
+                };
+            },
+            initiateSearch() {
+                this.searching = true;
+                this.search = '';
+            },
+            doSearch() {
+                if ( this.search.length ) {
+                    this.subscribers = null;
+                    this.pagination = this.getInitialPagination();
+                    this.fetchSubscribers();
+                }
+            },
+            cancelSearch() {
+                this.searching = false;
+                this.search = '';
+                this.fetchSubscribers();
             }
         },
         watch: {

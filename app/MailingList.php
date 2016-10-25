@@ -3,9 +3,12 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Scout\Searchable;
 
 class MailingList extends Model
 {
+
+    use Searchable;
 
     /**
      * Database table
@@ -79,5 +82,16 @@ class MailingList extends Model
             return static::whereHas('subscribers', function($query) {
                 $query->where('subscribers.is_deleted', 0);
             })->orderBy('name')->get(['id', 'name']);
+    }
+
+    /**
+     * Get search results
+     * @param $search
+     * @param int $paginate
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
+    public static function getSearchResults($search, $paginate = 1000)
+    {
+        return static::search($search)->paginate($paginate);
     }
 }
