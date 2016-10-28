@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('view-title', 'Subscribers - ')
+
 @section('view-header')
     <script>
         window.userSubscribersSettings = {

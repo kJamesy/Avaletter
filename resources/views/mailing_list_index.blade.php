@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('view-title', 'Mailing Lists - ')
+
 @section('view-header')
     <script>
         window.userMailingListsSettings = {

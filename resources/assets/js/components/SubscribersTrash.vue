@@ -43,7 +43,7 @@
             </thead>
             <tbody>
                 <tr v-for="subscriber in orderedSubscribers">
-                    <td><input type="checkbox" v-model="selected" v-bind:value="subscriber.id" number></td>
+                    <td><input type="checkbox" v-model="selected" v-bind:value="subscriber.id"></td>
                     <td>{{ subscriber.first_name }}</td>
                     <td>{{ subscriber.last_name }}</td>
                     <td>{{ subscriber.email }}</td>

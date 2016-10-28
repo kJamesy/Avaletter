@@ -66,6 +66,38 @@ if ( $('#app-subscribers').length ) {
         components: {
             Subscribers
         },
-        router
+        router: router
+    });
+}
+
+
+/**
+ * Templates
+ */
+import EmailTemplates from  './components/EmailTemplates.vue';
+import EmailTemplatesList from './components/EmailTemplatesList.vue';
+import EmailTemplatesNew from  './components/EmailTemplatesNew.vue';
+import EmailTemplatesEdit from './components/EmailTemplatesEdit.vue';
+
+
+if ( $('#app-email-templates').length ) {
+    var templatesRouter = new VueRouter({
+        mode: 'history',
+        base: emailTemplatesLinks.baseUri,
+        linkActiveClass: 'active',
+        routes: [
+            { path: '/all', name: 'emailTemplates.index', component: EmailTemplatesList },
+            { path: '/:id(\\d+)/edit', name: 'emailTemplates.edit', component: EmailTemplatesEdit },
+            { path: '/new', name: 'emailTemplates.new', component: EmailTemplatesNew },
+            { path: '*', redirect: { name: 'emailTemplates.index' } }
+        ]
+    });
+
+    new Vue({
+        el: '#app-email-templates',
+        components: {
+            EmailTemplates
+        },
+        router: templatesRouter
     });
 }

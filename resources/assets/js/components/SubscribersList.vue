@@ -51,7 +51,7 @@
             </thead>
             <tbody>
                 <tr v-for="subscriber in orderedSubscribers">
-                    <td><input type="checkbox" v-model="selected" v-bind:value="subscriber.id" number></td>
+                    <td><input type="checkbox" v-model="selected" v-bind:value="subscriber.id"></td>
                     <td>{{ subscriber.first_name }}</td>
                     <td>{{ subscriber.last_name }}</td>
                     <td>{{ subscriber.email }}</td>
@@ -149,9 +149,8 @@
 
                 vm.$http.get(vm.resourceUrl, {params : params}).then(function(response) {
                     vm.mailingList = response.data.mailing_list;
-                    if ( response.data.mailing_lists && response.data.mailing_lists.length ) {
-                        vm.$set(vm, 'mailingLists', response.data.mailing_lists);
-                    }
+                    if ( response.data.mailing_lists && response.data.mailing_lists.length )
+                        vm.mailingLists = response.data.mailing_lists;
                     var subscribers = response.data.subscribers;
 
                     if ( subscribers && subscribers.data && subscribers.data.length ) {
@@ -357,7 +356,7 @@
             },
             '$route'(to) {
                 if ( to.name == 'subscribers.index' && +this.mList > 0 )
-                    this.$set(this, 'mList', 0);
+                    this.mList = 0;
 
                 this.fetchSubscribers();
             },
