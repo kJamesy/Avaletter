@@ -12,7 +12,8 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('subscribers/export', 'SubscriberController@export');
         Route::get('subscribers/{vue?}', 'SubscriberController@index')->where('vue', '[\/\w\.-]*');
         Route::get('email-templates/{vue?}', 'EmailTemplateController@index')->where('vue', '[\/\w\.-]*');
-
+        Route::get('email-editions/{vue?}', 'EmailEditionController@index')->where('vue', '[\/\w\.-]*');
+        Route::get('emails/{vue?}', 'EmailController@index')->where('vue', '[\/\w\.-]*');
     }
 });
 
@@ -22,8 +23,11 @@ Route::put('subscribers/{option}/quick-edit', 'SubscriberController@quickUpdate'
 Route::post('subscribers/finalise-import', 'SubscriberController@finaliseImport');
 Route::resource('subscribers', 'SubscriberController');
 Route::resource('mailing-lists', 'MailingListController');
-Route::resource('email-templates', 'EmailTemplateController');
 Route::put('email-templates/{option}/quick-edit', 'EmailTemplateController@quickUpdate');
+Route::resource('email-templates', 'EmailTemplateController');
+Route::resource('email-editions', 'EmailEditionController');
+Route::put('emails/{option}/quick-edit', 'EmailController@quickUpdate');
+Route::resource('emails', 'EmailController');
 
 
 Route::get('search', function(\Illuminate\Http\Request $request) {

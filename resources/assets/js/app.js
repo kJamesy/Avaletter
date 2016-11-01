@@ -1,17 +1,5 @@
-
-/**
- * First we will load all of this project's JavaScript dependencies which
- * include Vue and Vue Resource. This gives a great starting point for
- * building robust, powerful web applications using Vue and Laravel.
- */
-
 require('./bootstrap');
 
-/**
- * Next, we will create a fresh Vue application instance and attach it to
- * the body of the page. From here, you may begin adding components to
- * the application, or feel free to tweak this setup for your needs.
- */
 import VueRouter from 'vue-router';
 Vue.use(VueRouter);
 
@@ -33,7 +21,6 @@ if ( $('#app-mailing-lists').length ) {
     });
 }
 
-
 /**
  * Subscribers
  */
@@ -43,7 +30,6 @@ import SubscribersNew from  './components/SubscribersNew.vue';
 import SubscribersImport from  './components/SubscribersImport.vue';
 import SubscribersEdit from './components/SubscribersEdit.vue';
 import SubscribersTrash from './components/SubscribersTrash.vue';
-
 
 if ( $('#app-subscribers').length ) {
     var router = new VueRouter({
@@ -70,15 +56,13 @@ if ( $('#app-subscribers').length ) {
     });
 }
 
-
 /**
- * Templates
+ * Email Templates
  */
 import EmailTemplates from  './components/EmailTemplates.vue';
 import EmailTemplatesList from './components/EmailTemplatesList.vue';
 import EmailTemplatesNew from  './components/EmailTemplatesNew.vue';
 import EmailTemplatesEdit from './components/EmailTemplatesEdit.vue';
-
 
 if ( $('#app-email-templates').length ) {
     var templatesRouter = new VueRouter({
@@ -99,5 +83,49 @@ if ( $('#app-email-templates').length ) {
             EmailTemplates
         },
         router: templatesRouter
+    });
+}
+
+/**
+ * Email Editions
+ */
+import EmailEditions from './components/EmailEditions.vue';
+
+if ( $('#app-email-editions').length ) {
+    new Vue({
+        el: '#app-email-editions',
+        components: {
+            EmailEditions
+        }
+    });
+}
+
+/**
+ * Emails
+ */
+import Emails from  './components/Emails.vue';
+import EmailsList from './components/EmailsList.vue';
+import EmailsNew from  './components/EmailsNew.vue';
+// import EmailsEdit from './components/EmailsEdit.vue';
+
+if ( $('#app-emails').length ) {
+    var emailsRouter = new VueRouter({
+        mode: 'history',
+        base: emailsLinks.baseUri,
+        linkActiveClass: 'active',
+        routes: [
+            { path: '/all', name: 'emails.index', component: EmailsList },
+            // { path: '/:id(\\d+)/edit', name: 'emails.edit', component: EmailsEdit },
+            { path: '/new', name: 'emails.new', component: EmailsNew },
+            { path: '*', redirect: { name: 'emails.index' } }
+        ]
+    });
+
+    new Vue({
+        el: '#app-emails',
+        components: {
+            Emails
+        },
+        router: emailsRouter
     });
 }

@@ -24,7 +24,7 @@
             <thead>
                 <tr>
                     <th>Name <button v-on:click="changeSort('name')"><i v-bind:class="'fa ' + getSortIcon('name')"></i></button></th>
-                    <th>Subscribers Count <button v-on:click="changeSort('subscribers_count')"><i v-bind:class="'fa ' + getSortIcon('subscribers_count')"></i></button></th>
+                    <th>Subscriber Count <button v-on:click="changeSort('subscribers_count')"><i v-bind:class="'fa ' + getSortIcon('subscribers_count')"></i></button></th>
                     <th>Created <button v-on:click="changeSort('created_at')"><i v-bind:class="'fa ' + getSortIcon('created_at')"></i></button></th>
                     <th>Updated <button v-on:click="changeSort('updated_at')"><i v-bind:class="'fa ' + getSortIcon('updated_at')"></i></button></th>
                     <th colspan="2"></th>

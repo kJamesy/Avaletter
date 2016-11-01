@@ -89,9 +89,8 @@ class EmailTemplateController extends Controller
 
             return $email_template;
         }
-        else {
+        else
             return response()->json(['authentication' => 'User not authenticated.'], 500);
-        }
     }
 
     /**

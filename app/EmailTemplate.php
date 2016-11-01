@@ -44,22 +44,10 @@ class EmailTemplate extends Model
     }
 
     /**
-     * Get specified templates
-     * @param $ids
-     * @param string $orderBy
-     * @param string $order
-     * @return mixed
-     */
-    public function getSpecifiedTemplates($ids, $orderBy = 'created_at', $order = 'asc')
-    {
-        return static::whereIn('id', $ids)->orderBy($orderBy, $order)->get();
-    }
-
-    /**
      * Get search results
      * @param $search
      * @param int $paginate
-     * @return mixed
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
     public static function getSearchResults($search, $paginate = 1000)
     {

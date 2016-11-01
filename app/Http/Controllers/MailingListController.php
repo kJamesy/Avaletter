@@ -62,7 +62,6 @@ class MailingListController extends Controller
         }
     }
 
-
     /**
      * Store a newly created resource in storage.
      * @param Request $request
@@ -86,7 +85,7 @@ class MailingListController extends Controller
      */
     public function show($id)
     {
-        if ( $mList = MailingList::getMailingList(( (int) $id) ) )
+        if ( $mList = MailingList::getMailingList( (int) $id ) )
             return $mList;
         else
             return response()->json(['error' => 'Mailing list does not exist'], 404);
@@ -100,7 +99,7 @@ class MailingListController extends Controller
      */
     public function update(Request $request, $id)
     {
-        if ( $mList = MailingList::getMailingList(( (int) $id) ) ) {
+        if ( $mList = MailingList::getMailingList( (int) $id ) ) {
 
             if ( $mList->name != trim($request->name) ) {
                 $this->validate($request, $this->rules);
@@ -122,9 +121,9 @@ class MailingListController extends Controller
      */
     public function destroy($id)
     {
-       if ( $mList = MailingList::getMailingList(( (int) $id) ) ) {
+       if ( $mList = MailingList::getMailingList( (int) $id ) ) {
            $mList->delete();
-           return response()->json(['success' => 'Mailing list successfully permanently deleted']);
+           return response()->json(['success' => 'Mailing list permanently deleted']);
        }
        else
            return response()->json(['error' => 'Mailing list does not exist'], 404);

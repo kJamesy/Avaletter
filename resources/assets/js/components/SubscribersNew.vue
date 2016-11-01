@@ -21,7 +21,7 @@
                     <input type="checkbox" v-model="subscriber.active"> Active
                 </label>
             </div>
-            <div class="form-group" v-if="mLists">
+            <div class="form-group" v-if="mLists.length">
                 <label for="mailing_lists">Mailing Lists</label>
                 <select class="form-control" id="mailing_lists" v-model="subscriber.mailing_lists" multiple>
                     <option v-for="mList in sortedMLists" v-bind:value="mList.id">{{ mList.name }}</option>

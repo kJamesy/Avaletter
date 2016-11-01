@@ -26,6 +26,15 @@ class User extends Authenticatable
     ];
 
     /**
+     * One to Many User to Email relationship
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function emails()
+    {
+        return $this->hasMany('App\Email');
+    }
+
+    /**
      * Cache the supplied settings for the supplied user; forever
      * @param $userId
      * @param array $cacheKeys

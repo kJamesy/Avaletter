@@ -100,6 +100,15 @@ class Subscriber extends Model
     }
 
     /**
+     * Get subscribers that can be emailed
+     * @return mixed
+     */
+    public static function getEmailableSubscribersList()
+    {
+        return static::where('is_deleted', 0)->where('active', 1)->orderBy('first_name')->get();
+    }
+
+    /**
      * Get specified subscribers
      * @param $ids
      * @param string $orderBy
