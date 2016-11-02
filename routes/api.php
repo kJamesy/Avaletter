@@ -17,6 +17,6 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:api');
 
-Route::post('sparkpost/webhook', function () {
+Route::post('sparkpost/webhooks', function () {
     return response()->json(['message' => 'It\'s working!'], 200);
 });
