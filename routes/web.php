@@ -3,6 +3,39 @@ Route::any('webhooks', function () {
     return response()->json(['message' => 'It\'s working!'], 200);
 });
 
+Route::get('lab', function() {
+    $http_client = new \Http\Adapter\Guzzle6\Client(new \GuzzleHttp\Client());
+    $spark = new \SparkPost\SparkPost($http_client, [
+        'key' => env('SPARKPOST_API_KEY'),
+        'protocol' => 'http',
+        'version' => 'v1',
+//        'async' => false
+    ]);
+
+    $promise = $spark->transmissions->post([
+        'content' => [
+            'from' => [
+                'name' => 'James Test',
+                'email' => 'james@ava.email-newsletter.info',
+            ],
+            'subject' => 'First Mailing From PHP',
+            'html' => '<html><body><h1>Congratulations, {{ name }}!</h1><p>You just sent your very first mailing!</p></body></html>',
+            'text' => 'Congratulations, {{name}}!! You just sent your very first mailing!',
+        ],
+        'substitution_data' => ['name' => 'YOUR_FIRST_NAME'],
+        'recipients' => [
+            [
+                'address' => [
+                    'name' => 'Some Subscriber',
+                    'email' => 'james@acw.uk.com',
+                ],
+            ],
+        ],
+    ]);
+
+    var_dump($promise);
+});
+
 Route::get('/', function () {
     return view('welcome');
 });
