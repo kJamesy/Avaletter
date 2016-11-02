@@ -4,9 +4,10 @@ Route::any('webhooks', function () {
 });
 
 Route::get('lab', function() {
+    $when = \Carbon\Carbon::now()->addMinute(5);
     $email = \App\EmailTemplate::getTemplate(17);
 
-    $result = \Illuminate\Support\Facades\Mail::to(\App\Subscriber::whereIn('id', [1,2,3,4])->get())->send(new \App\Mail\Newsletter($email));
+    $result = \Illuminate\Support\Facades\Mail::to(\App\Subscriber::whereIn('id', [1,2,3,4])->get())->later($when, new \App\Mail\Newsletter($email));
     var_dump($result);
 });
 
