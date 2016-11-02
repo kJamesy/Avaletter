@@ -16,3 +16,11 @@ use Illuminate\Http\Request;
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:api');
+
+Route::any('webhooks', function () {
+    return response()->json(['message' => 'It\'s working!'], 200);
+});
+
+Route::post('postman', function() {
+    return response()->json(['message' => 'Yaay! Works!'], 200);
+});

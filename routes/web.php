@@ -1,12 +1,4 @@
 <?php
-Route::any('webhooks', function () {
-    return response()->json(['message' => 'It\'s working!'], 200);
-});
-
-Route::post('postman', function() {
-   return response()->json(['message' => 'Yaay! Works!'], 200);
-});
-
 Route::get('lab', function() {
     $when = \Carbon\Carbon::now()->addMinute(2);
     $email = \App\EmailTemplate::getTemplate(17);
