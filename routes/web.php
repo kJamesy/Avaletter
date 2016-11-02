@@ -1,4 +1,7 @@
 <?php
+Route::get('webhooks', function () {
+    return 'It\'s working!';
+});
 
 Route::get('/', function () {
     return view('welcome');
