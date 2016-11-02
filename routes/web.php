@@ -11,7 +11,7 @@ Route::get('lab', function() {
 
     if ( $subscribers ) {
         foreach ($subscribers as $subscriber) {
-            $result = \Illuminate\Support\Facades\Mail::to($subscriber)->later($when, new \App\Mail\Newsletter($email, $subscriber));
+            $result = \Illuminate\Support\Facades\Mail::to($subscriber)->send(new \App\Mail\Newsletter($email, $subscriber));
             var_dump($result);
         }
     }
