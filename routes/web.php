@@ -1,5 +1,5 @@
 <?php
-Route::any('webhooks', function () {
+Route::post('webhooks', function () {
     return response()->json(['message' => 'It\'s working!'], 200);
 });
 
