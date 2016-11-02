@@ -4,7 +4,7 @@ Route::any('webhooks', function () {
 });
 
 Route::get('lab', function() {
-    $email = \App\Email::getEmail(17);
+    $email = \App\Email::getEmail(1);
 
     \Illuminate\Support\Facades\Mail::to(\App\User::find(1))->send(new \App\Mail\Newsletter($email));
 });
