@@ -2,8 +2,8 @@
 
 namespace App\Mail;
 
-use App\Email;
 use App\EmailTemplate;
+use App\Subscriber;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
@@ -13,16 +13,21 @@ class Newsletter extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
-    public $email;
+    protected $email;
+    protected $variables;
+    public $subscriber;
 
     /**
      * Create a new message instance.
      *
-     * @return void
+     * @param EmailTemplate $template
+     * @param Subscriber $subscriber
      */
-    public function __construct(EmailTemplate $template)
+    public function __construct(EmailTemplate $template, Subscriber $subscriber)
     {
         $this->email = $template;
+        $this->subscriber = $subscriber;
+        $this->variables = ['id' => '%recipient.id%', 'first_name' => '%recipient.first_name%', 'last_name' => '%recipient.last_name%', 'email' => '%recipient.email%'];
     }
 
     /**
@@ -32,6 +37,26 @@ class Newsletter extends Mailable implements ShouldQueue
      */
     public function build()
     {
-        return $this->view('newsletter.subscriber');
+        $email = $this->replaceEmailVariables();
+        return $this->view('newsletter.subscriber')->with(compact('email'));
+    }
+
+
+    /**
+     * Handle user variables
+     * @return EmailTemplate|mixed
+     */
+    protected function replaceEmailVariables()
+    {
+        $email = $this->email;
+        $variables = $this->variables;
+        $subscriber = $this->subscriber;
+
+        if ( count($variables) ) {
+            foreach ($variables as $key => $variable)
+                $email = str_replace($variable, $subscriber->{$key}, $email);
+        }
+
+        return $email;
     }
 }

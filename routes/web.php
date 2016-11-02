@@ -4,11 +4,18 @@ Route::any('webhooks', function () {
 });
 
 Route::get('lab', function() {
-    $when = \Carbon\Carbon::now()->addMinute(5);
+    $when = \Carbon\Carbon::now()->addMinute(2);
     $email = \App\EmailTemplate::getTemplate(17);
 
-    $result = \Illuminate\Support\Facades\Mail::to(\App\Subscriber::whereIn('id', [1,2,3,4])->get())->later($when, new \App\Mail\Newsletter($email));
-    var_dump($result);
+    $subscribers = \App\Subscriber::whereIn('id', [1,2,3,4])->get();
+
+    if ( $subscribers ) {
+        foreach ($subscribers as $subscriber) {
+            $result = \Illuminate\Support\Facades\Mail::to($subscriber)->later($when, new \App\Mail\Newsletter($email, $subscriber));
+            var_dump($result);
+        }
+    }
+
 });
 
 Route::get('/', function () {
