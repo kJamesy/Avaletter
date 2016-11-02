@@ -3,6 +3,7 @@
 namespace App\Mail;
 
 use App\Email;
+use App\EmailTemplate;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
@@ -19,9 +20,9 @@ class Newsletter extends Mailable
      *
      * @return void
      */
-    public function __construct(Email $email)
+    public function __construct(EmailTemplate $template)
     {
-        $this->email = $email;
+        $this->email = $template;
     }
 
     /**
