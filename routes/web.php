@@ -6,11 +6,12 @@ Route::get('/', function () {
 
 Auth::routes();
 
-Route::get('email-templates/export', 'EmailTemplateController@export');
+Route::get('email-templates/{id}/display', ['as' => 'email-templates.display', 'uses' => 'EmailTemplateController@externalDisplay']);
 Route::group(['middleware' => 'auth'], function () {
     if ( ! request()->ajax() ) {
         Route::get('subscribers/export', 'SubscriberController@export');
         Route::get('subscribers/{vue?}', 'SubscriberController@index')->where('vue', '[\/\w\.-]*');
+        Route::get('email-templates/export', 'EmailTemplateController@export');
         Route::get('email-templates/{vue?}', 'EmailTemplateController@index')->where('vue', '[\/\w\.-]*');
         Route::get('email-editions/{vue?}', 'EmailEditionController@index')->where('vue', '[\/\w\.-]*');
         Route::get('emails/{vue?}', 'EmailController@index')->where('vue', '[\/\w\.-]*');

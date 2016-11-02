@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\AvaHelper\SimpleHTMLToPDF;
 use App\EmailTemplate;
 use App\User;
 use Illuminate\Http\Request;
@@ -20,7 +21,7 @@ class EmailTemplateController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth');
+        $this->middleware('auth', ['except' => ['externalDisplay']]);
         $this->rules = EmailTemplate::$rules;
         $this->paginate = 25;
         $this->orderByFields = ['name', 'last_edited_by', 'created_at', 'updated_at'];
@@ -193,11 +194,21 @@ class EmailTemplateController extends Controller
      */
     public function export(Request $request)
     {
-
         $id = (int) $request->id;
+        $link = route('email-templates.display', ['id' => $id]);
+        $pdf = new SimpleHTMLToPDF();
+        $pdf->display($link);
+    }
 
-        if ( $email_template = EmailTemplate::getTemplate( (int) $id) ) {
-            echo "Coming soon...";
-        }
+    /**
+     * Display the template externally
+     * @param $id
+     */
+    public function externalDisplay($id)
+    {
+        if ( $email_template = EmailTemplate::getTemplate( (int) $id) )
+            echo $email_template->content;
+        else
+            echo 'No template found';
     }
 }
