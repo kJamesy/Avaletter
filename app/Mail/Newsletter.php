@@ -13,9 +13,9 @@ class Newsletter extends Mailable
 {
     use Queueable, SerializesModels;
 
-    protected $email;
+    protected $content;
     protected $variables;
-    public $subscriber;
+    protected $subscriber;
 
     /**
      * Create a new message instance.
@@ -25,7 +25,7 @@ class Newsletter extends Mailable
      */
     public function __construct(EmailTemplate $template, Subscriber $subscriber)
     {
-        $this->email = $template;
+        $this->content = $template->content;
         $this->subscriber = $subscriber;
         $this->variables = ['id' => '%recipient.id%', 'first_name' => '%recipient.first_name%', 'last_name' => '%recipient.last_name%', 'email' => '%recipient.email%'];
     }
@@ -37,8 +37,8 @@ class Newsletter extends Mailable
      */
     public function build()
     {
-        $email = $this->replaceEmailVariables();
-        return $this->view('newsletter.subscriber')->with(compact('email'));
+        $content = $this->replaceEmailVariables();
+        return $this->view('newsletter.subscriber')->with(compact('content'));
     }
 
 
@@ -48,15 +48,15 @@ class Newsletter extends Mailable
      */
     protected function replaceEmailVariables()
     {
-        $email = $this->email;
+        $content = $this->content;
         $variables = $this->variables;
         $subscriber = $this->subscriber;
 
         if ( count($variables) ) {
             foreach ($variables as $key => $variable)
-                $email = str_replace($variable, $subscriber->{$key}, $email);
+                $content = str_replace($variable, $subscriber->{$key}, $content);
         }
 
-        return $email;
+        return $content;
     }
 }
