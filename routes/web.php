@@ -6,7 +6,7 @@ Route::any('webhooks', function () {
 Route::get('lab', function() {
     $email = \App\EmailTemplate::getTemplate(17);
 
-    $result = \Illuminate\Support\Facades\Mail::to(\App\Subscriber::find(1))->send(new \App\Mail\Newsletter($email));
+    $result = \Illuminate\Support\Facades\Mail::to(\App\Subscriber::whereIn('id', [1,2,3,4])->get())->send(new \App\Mail\Newsletter($email));
     var_dump($result);
 });
 
