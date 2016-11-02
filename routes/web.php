@@ -32,8 +32,7 @@ Route::get('lab', function() {
             ],
         ],
     ]);
-
-    var_dump($promise);
+    
 });
 
 Route::get('/', function () {
