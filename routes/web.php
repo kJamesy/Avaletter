@@ -1,6 +1,6 @@
 <?php
 Route::any('webhooks', function () {
-    //silence
+    return response()->json(['message' => 'It\'s working!'], 200);
 });
 
 Route::get('lab', function() {
