@@ -21,12 +21,12 @@ Route::get('lab', function() {
                 'html' => '<html><body><h1>Congratulations, {{name}}!</h1><p>You just sent your very first mailing!</p></body></html>',
                 'text' => 'Congratulations, {{name}}!! You just sent your very first mailing!',
             ],
-            'substitution_data' => ['name' => "$subscriber->first_name $subscriber->last_name"],
+            'substitution_data' => ['name' => "Ling"],
             'recipients' => [
                 [
                     'address' => [
-                        'name' => "$subscriber->first_name $subscriber->last_name",
-                        'email' => "$subscriber->email",
+                        'name' => "Ling Cao",
+                        'email' => "ling@acw.uk.com",
                     ],
                 ],
             ],
@@ -39,7 +39,7 @@ Route::get('lab', function() {
             $response = $sparky->transmissions->get();
 
             var_dump($response->getStatusCode()."\n");
-            var_dump($response->getBody()."\n");
+            var_dump($response->getBody());
         }
         catch (\Exception $e) {
             echo $e->getCode()."\n";
