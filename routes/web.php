@@ -5,10 +5,16 @@ Route::get('lab', function() {
 
     $subscribers = \App\Subscriber::whereIn('id', [1,2,3,4])->get();
 
-//    dd(config('services.sparkpost'));
     if ( $subscribers ) {
         foreach ($subscribers as $subscriber) {
-            $result = \Illuminate\Support\Facades\Mail::to($subscriber)->later($when, new \App\Mail\Newsletter($email, $subscriber));
+            config(['services.sparkpost.options' =>
+                [
+                    'open_tracking' => false,
+                    'click_tracking' => false,
+                    'transactional' => true,
+                ]
+            ]);
+            $result = \Illuminate\Support\Facades\Mail::to($subscriber)->send(new \App\Mail\Newsletter($email, $subscriber));
             var_dump($result);
         }
     }
