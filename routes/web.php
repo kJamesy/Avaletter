@@ -1,71 +1,63 @@
 <?php
 Route::get('lab', function() {
-    $when = \Carbon\Carbon::now()->addMinute(1);
-    $email = \App\EmailTemplate::getTemplate(17);
-
+    $email = \App\Email::first();
     $subscribers = \App\Subscriber::whereIn('id', [1,2,3,4])->get();
+
+    $newsletter = new \App\Mail\Newsletter($email, $subscribers);
+
+
+    dd($newsletter->fireEmail());
+
 //    $subscriber = \App\Subscriber::first();
 
-    if ( $subscribers ) {
-        $recipients = [];
-        foreach($subscribers as $subscriber) {
-            $recipients[] = [
-                'address' => [
-                    'name' => "$subscriber->first_name $subscriber->last_name",
-                    'email' => $subscriber->email
-                ],
-                'substitution_data' => [
-                    'id' => $subscriber->id,
-                    'name' => $subscriber->first_name,
-                    'unsubscribe_link' => "<a href='http://www.example.com/unsub_handler?email=$subscriber->email' data-msys-unsubscribe='1'>Unsubscribe</a>"
-                ],
-            ];
-        }
-
-        $httpClient = new \Http\Adapter\Guzzle6\Client(new \GuzzleHttp\Client());
-        $sparky = new \SparkPost\SparkPost($httpClient, ['key' => env('SPARKPOST_SECRET')]);
-
-        $promise = $sparky->transmissions->post([
-            'content' => [
-                'from' => [
-                    'name' => "Ava Lovelace",
-                    'email' => "hello@ava.email-newsletter.info",
-                ],
-                'subject' => 'SparkPost Test',
-                'html' => '<html><body><h1>It works, {{name}}!</h1><p>You just sent your very first mailing!</p> <p>{{{ unsubscribe_link }}}</p></body></html>',
-                'text' => 'Congratulations, {{name}}!! You just sent your very first mailing!',
-            ],
-            'recipients' => $recipients,
-        ]);
-
-//        $promise = $sparky->transmissions->get();
-
-        $sparky->setOptions(['async' => false]);
-        try {
-            $response = $sparky->transmissions->get();
-
-            var_dump($response->getStatusCode()."\n");
-            var_dump($response->getBody());
-        }
-        catch (\Exception $e) {
-            echo $e->getCode()."\n";
-            echo $e->getMessage()."\n";
-        }
-
-//        foreach ($subscribers as $subscriber) {
-//            config(['services.sparkpost.options' =>
-//                [
-//                    'open_tracking' => false,
-//                    'click_tracking' => false,
-//                    'transactional' => true,
-//                ]
-//            ]);
-//            $result = \Illuminate\Support\Facades\Mail::to($subscriber)->send(new \App\Mail\Newsletter($email, $subscriber));
-//
+//    if ( $subscribers ) {
+//        $recipients = [];
+//        foreach($subscribers as $subscriber) {
+//            $recipients[] = [
+//                'address' => [
+//                    'name' => "$subscriber->first_name $subscriber->last_name",
+//                    'email' => $subscriber->email
+//                ],
+//                'substitution_data' => [
+//                    'id' => $subscriber->id,
+//                    'name' => $subscriber->first_name,
+//                    'unsubscribe_link' => "<a href='http://www.example.com/unsub_handler?email=$subscriber->email' data-msys-unsubscribe='1'>Unsubscribe</a>"
+//                ],
+//            ];
 //        }
-    }
+//
+//        $httpClient = new \Http\Adapter\Guzzle6\Client(new \GuzzleHttp\Client());
+//        $sparky = new \SparkPost\SparkPost($httpClient, ['key' => env('SPARKPOST_SECRET')]);
+//
+//        $promise = $sparky->transmissions->post([
+//            'content' => [
+//                'from' => [
+//                    'name' => "Ava Lovelace",
+//                    'email' => "hello@ava.email-newsletter.info",
+//                ],
+//                'subject' => 'SparkPost Test',
+//                'html' => '<html><body><h1>It works, {{name}}!</h1><p>You just sent your very first mailing!</p> <p>{{{ unsubscribe_link }}}</p></body></html>',
+//                'text' => 'Congratulations, {{name}}!! You just sent your very first mailing!',
+//            ],
+//            'recipients' => $recipients,
+//        ]);
+//
+//        $sparky->setOptions(['async' => false]);
+//        try {
+//            $response = $sparky->transmissions->get();
+//
+//            var_dump($response->getStatusCode()."\n");
+//            var_dump($response->getBody());
+//        }
+//        catch (\Exception $e) {
+//            echo $e->getCode()."\n";
+//            echo $e->getMessage()."\n";
+//        }
+//
+//    }
 
 });
+Route::get('unsubscribe', ['as' => 'subscribers.unsubscribe', function() { return 'Unsubscribed'; }]);
 
 Route::get('/', function () {
     return view('welcome');

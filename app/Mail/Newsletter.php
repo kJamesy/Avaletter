@@ -1,62 +1,177 @@
 <?php
 
 namespace App\Mail;
+use App\Email;
+use GuzzleHttp\Client;
+use Http\Adapter\Guzzle6\Client as GuzzleAdapter;
+use Illuminate\Database\Eloquent\Collection;
+use SparkPost\SparkPost;
 
-use App\EmailTemplate;
-use App\Subscriber;
-use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Contracts\Queue\ShouldQueue;
-
-class Newsletter extends Mailable
+class Newsletter
 {
-    use Queueable, SerializesModels;
-
-    protected $content;
-    protected $variables;
-    protected $subscriber;
+    public $sparkSecret;
+    public $sender;
+    public $subject;
+    public $body;
+    public $recipients;
+    public $variables;
 
     /**
-     * Create a new message instance.
-     *
-     * @param EmailTemplate $template
-     * @param Subscriber $subscriber
+     * Newsletter constructor.
+     * @param Email $email
+     * @param Collection $recipients
      */
-    public function __construct(EmailTemplate $template, Subscriber $subscriber)
+    public function __construct(Email $email, Collection $recipients)
     {
-        $this->content = $template->content;
-        $this->subscriber = $subscriber;
-        $this->variables = ['id' => '%recipient.id%', 'first_name' => '%recipient.first_name%', 'last_name' => '%recipient.last_name%', 'email' => '%recipient.email%'];
+        $this->sparkSecret = env('SPARKPOST_SECRET');
+        $this->sender = $this->getSender($email->from);
+        $this->subject = $email->subject;
+        $this->variables = $this->setEmailVariables();
+        $this->body = $this->replaceEmailVariables($email->body);
+        $this->recipients = $this->getRecipientsArray($recipients);
     }
 
     /**
-     * Build the message.
-     *
-     * @return $this
+     * Fire email via Sparkpost
+     * @return array
      */
-    public function build()
+    public function fireEmail()
     {
-        $content = $this->replaceEmailVariables();
-        return $this->view('newsletter.subscriber')->with(compact('content'));
-    }
+        $httpClient = new GuzzleAdapter(new Client());
+        $sparky = new SparkPost($httpClient, ['key' => $this->sparkSecret]);
+        $sparky->setOptions(['async' => false]);
 
+        $promise = $sparky->transmissions->post($this->getSparkyContent());
 
-    /**
-     * Handle user variables
-     * @return EmailTemplate|mixed
-     */
-    protected function replaceEmailVariables()
-    {
-        $content = $this->content;
-        $variables = $this->variables;
-        $subscriber = $this->subscriber;
-
-        if ( count($variables) ) {
-            foreach ($variables as $key => $variable)
-                $content = str_replace($variable, $subscriber->{$key}, $content);
+        try {
+            $response = $sparky->transmissions->get();
+            return ['success' => $response->getStatusCode()];
+        }
+        catch (\Exception $e) {
+            return ['error' => $e->getMessage()];
         }
 
-        return $content;
     }
+
+    /**
+     * Construct content for SparkPost
+     * @return array
+     */
+    public function getSparkyContent()
+    {
+        return [
+            'content' => [
+                'from' => $this->sender,
+                'subject' => $this->subject,
+                'html' => "<html><body>$this->body</body></html>",
+            ],
+            'recipients' => $this->recipients,
+        ];
+    }
+    /**
+     * Get sender details
+     * @param $raw
+     * @return array
+     */
+    protected function getSender($raw)
+    {
+        $exploded = explode('<', $raw);
+
+        $name = trim($exploded[0]);
+        $email = trim(explode('>', $exploded[1])[0]);
+
+        return compact('name', 'email');
+    }
+
+    /**
+     * Define email variables to substitute
+     * Ensure the array key is a property of App\Subscriber; except unsubscribe_link
+     * @return array
+     */
+    protected function setEmailVariables()
+    {
+        return [
+            'id' => '%id%',
+            'first_name' => '%first_name%',
+            'last_name' => '%last_name%',
+            'email' => '%email%',
+            'unsubscribe_link' => '%unsubscribe_link%'
+        ];
+    }
+
+    /**
+     * Wrap user variables with the SparkPost format
+     * @param $body
+     * @return mixed
+     */
+    protected function replaceEmailVariables($body)
+    {
+        $variables = $this->variables;
+
+        if ( count($variables) ) {
+            foreach ($variables as $key => $variable) {
+                $body = ( $key == 'unsubscribe_link' )
+                    ? str_ireplace($variable, "{{{ $key }}}", $body)
+                    : str_ireplace($variable, "{{ $key }}", $body);
+
+            }
+        }
+
+        return $body;
+    }
+
+    /**
+     * Get recipient address details
+     * @param $recipient
+     * @return array
+     */
+    protected function getRecipientAddress($recipient)
+    {
+        return [
+            'name' => "$recipient->first_name $recipient->last_name",
+            'email' => $recipient->email
+        ];
+    }
+
+    /**
+     * Get recipient's substitution data
+     * @param $recipient
+     * @return array
+     */
+    protected function getRecipientSubstitutionData($recipient)
+    {
+        $variables = $this->variables;
+        $data = [];
+
+        if ( count($variables) ) {
+            foreach ($variables as $key => $variable) {
+                $data[$key] = ($key == 'unsubscribe_link')
+                    ? "<a href='" . route('subscribers.unsubscribe') . "?email=$recipient->email' data-msys-unsubscribe='1'>unsubscribe</a>"
+                    : $recipient->{$key};
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * Get recipients array
+     * @param $recipients
+     * @return array
+     */
+    protected function getRecipientsArray($recipients)
+    {
+        $recipientsArr = [];
+
+        foreach($recipients as $recipient) {
+            $recipientsArr[] = [
+                'address' => $this->getRecipientAddress($recipient),
+                'substitution_data' => $this->getRecipientSubstitutionData($recipient),
+            ];
+        }
+
+        return $recipientsArr;
+    }
+
+
 }
