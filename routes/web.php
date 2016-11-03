@@ -32,7 +32,7 @@ Route::get('lab', function() {
                     'email' => "hello@ava.email-newsletter.info",
                 ],
                 'subject' => 'SparkPost Test',
-                'html' => '<html><body><h1>It works, {{name}}!</h1><p>You just sent your very first mailing!</p> <p>{{ unsubscribe_link }}</p></body></html>',
+                'html' => '<html><body><h1>It works, {{name}}!</h1><p>You just sent your very first mailing!</p> <p>{{{ unsubscribe_link }}}</p></body></html>',
                 'text' => 'Congratulations, {{name}}!! You just sent your very first mailing!',
             ],
             'recipients' => $recipients,
