@@ -34,18 +34,17 @@ Route::get('lab', function() {
 
         $promise = $sparky->transmissions->get();
 
-        $promise->then(
-            function ($response) {
-                echo $response->getStatusCode()."\n";
-                print_r($response->getBody())."\n";
-            },
-            function (Exception $e) {
-                echo $e->getCode()."\n";
-                echo $e->getMessage()."\n";
-            }
-        );
+        $sparky->setOptions(['async' => false]);
+        try {
+            $response = $sparky->transmissions->get();
 
-        echo "I will print out before the promise is fulfilled";
+            echo $response->getStatusCode()."\n";
+            print_r($response->getBody())."\n";
+        }
+        catch (\Exception $e) {
+            echo $e->getCode()."\n";
+            echo $e->getMessage()."\n";
+        }
 
 //        foreach ($subscribers as $subscriber) {
 //            config(['services.sparkpost.options' =>
