@@ -3,10 +3,58 @@ Route::get('lab', function() {
     $when = \Carbon\Carbon::now()->addMinute(1);
     $email = \App\EmailTemplate::getTemplate(17);
 
-//    $subscribers = \App\Subscriber::whereIn('id', [1,2,3,4])->get();
-    $subscriber = \App\Subscriber::first();
+    $subscribers = \App\Subscriber::whereIn('id', [1,2,3,4])->get();
+//    $subscriber = \App\Subscriber::first();
 
-    if ( $subscriber ) {
+    if ( $subscribers ) {
+//        $addresses = [];
+//        foreach($subscribers as $subscriber) {
+//            $addresses[] = ['address' => ['name' => "$subscriber->first_name $subscriber->last_name", 'email' => $subscriber->email]];
+//        }
+//
+//        var_dump($addresses);
+//        $options = [
+//            'content' => [
+//                'from' => [
+//                    'name' => "Ava Lovelace",
+//                    'email' => "hello@ava.email-newsletter.info",
+//                ],
+//                'subject' => 'SparkPost Test',
+//                'html' => '<html><body><h1>Congratulations, {{name}}!</h1><p>You just sent your very first mailing!</p></body></html>',
+//                'text' => 'Congratulations, {{name}}!! You just sent your very first mailing!',
+//            ],
+//            'substitution_data' => ['name' => "Ling"],
+//            'recipients' => [
+//                $addresses
+//            ],
+//        ];
+//
+//        var_dump($options['recipients']);
+//
+//        $options2 = [
+//            'content' => [
+//                'from' => [
+//                    'name' => "Ava Lovelace",
+//                    'email' => "hello@ava.email-newsletter.info",
+//                ],
+//                'subject' => 'SparkPost Test',
+//                'html' => '<html><body><h1>Congratulations, {{name}}!</h1><p>You just sent your very first mailing!</p></body></html>',
+//                'text' => 'Congratulations, {{name}}!! You just sent your very first mailing!',
+//            ],
+//            'substitution_data' => ['name' => "Ling"],
+//            'recipients' => [
+//                [
+//                    'address' => [
+//                        'name' => "Ling Cao",
+//                        'email' => "ling@acw.uk.com",
+//                    ],
+//                ],
+//            ],
+//        ];
+
+//        var_dump($options2['recipients']);
+//        dd(1);
+
 
         $httpClient = new \Http\Adapter\Guzzle6\Client(new \GuzzleHttp\Client());
         $sparky = new \SparkPost\SparkPost($httpClient, ['key' => env('SPARKPOST_SECRET')]);
@@ -27,6 +75,12 @@ Route::get('lab', function() {
                     'address' => [
                         'name' => "Ling Cao",
                         'email' => "ling@acw.uk.com",
+                    ],
+                ],
+                [
+                    'address' => [
+                        'name' => "James Ilaki",
+                        'email' => "james@acw.uk.com",
                     ],
                 ],
             ],
