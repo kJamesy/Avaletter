@@ -3,20 +3,61 @@ Route::get('lab', function() {
     $when = \Carbon\Carbon::now()->addMinute(1);
     $email = \App\EmailTemplate::getTemplate(17);
 
-    $subscribers = \App\Subscriber::whereIn('id', [1,2,3,4])->get();
+//    $subscribers = \App\Subscriber::whereIn('id', [1,2,3,4])->get();
+    $subscriber = \App\Subscriber::first();
 
-    if ( $subscribers ) {
-        foreach ($subscribers as $subscriber) {
-            config(['services.sparkpost.options' =>
+    if ( $subscriber ) {
+
+        $httpClient = new \Http\Adapter\Guzzle6\Client(new \GuzzleHttp\Client());
+        $sparky = new \SparkPost\SparkPost($httpClient, ['key' => env('SPARKPOST_SECRET')]);
+
+        $promise = $sparky->transmissions->post([
+            'content' => [
+                'from' => [
+                    'name' => "Ava Lovelace",
+                    'email' => "lovelace@ava.email-newsletter.info",
+                ],
+                'subject' => 'SparkPost Test',
+                'html' => '<html><body><h1>Congratulations, {{name}}!</h1><p>You just sent your very first mailing!</p></body></html>',
+                'text' => 'Congratulations, {{name}}!! You just sent your very first mailing!',
+            ],
+            'substitution_data' => ['name' => "$subscriber->first_name $subscriber->last_name"],
+            'recipients' => [
                 [
-                    'open_tracking' => false,
-                    'click_tracking' => false,
-                    'transactional' => true,
-                ]
-            ]);
-            $result = \Illuminate\Support\Facades\Mail::to($subscriber)->send(new \App\Mail\Newsletter($email, $subscriber));
-            var_dump($result);
-        }
+                    'address' => [
+                        'name' => "$subscriber->first_name $subscriber->last_name",
+                        'email' => "$subscriber->email",
+                    ],
+                ],
+            ],
+        ]);
+
+        $promise = $sparky->transmissions->get();
+
+        $promise->then(
+            function ($response) {
+                echo $response->getStatusCode()."\n";
+                print_r($response->getBody())."\n";
+            },
+            function (Exception $e) {
+                echo $e->getCode()."\n";
+                echo $e->getMessage()."\n";
+            }
+        );
+
+        echo "I will print out before the promise is fulfilled";
+
+//        foreach ($subscribers as $subscriber) {
+//            config(['services.sparkpost.options' =>
+//                [
+//                    'open_tracking' => false,
+//                    'click_tracking' => false,
+//                    'transactional' => true,
+//                ]
+//            ]);
+//            $result = \Illuminate\Support\Facades\Mail::to($subscriber)->send(new \App\Mail\Newsletter($email, $subscriber));
+//
+//        }
     }
 
 });

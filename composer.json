@@ -10,7 +10,9 @@
         "maatwebsite/excel": "~2.1.0",
         "laravel/scout": "^1.1",
         "elasticsearch/elasticsearch": "^2.2",
-        "guzzlehttp/guzzle": "^6.2"
+        "guzzlehttp/guzzle": "^6.2",
+        "php-http/guzzle6-adapter": "^1.1",
+        "sparkpost/sparkpost": "^2.0"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",
