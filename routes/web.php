@@ -1,17 +1,9 @@
 <?php
 Route::get('lab', function() {
-    $when = \Carbon\Carbon::now()->addMinute(2);
+    $when = \Carbon\Carbon::now()->addMinute(1);
     $email = \App\EmailTemplate::getTemplate(17);
 
     $subscribers = \App\Subscriber::whereIn('id', [1,2,3,4])->get();
-
-    config(['services.sparkpost.options' =>
-        [
-            'open_tracking' => false,
-            'click_tracking' => false,
-            'transactional' => true,
-        ]
-    ]);
 
 //    dd(config('services.sparkpost'));
     if ( $subscribers ) {
