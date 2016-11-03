@@ -4,57 +4,7 @@ Route::get('lab', function() {
     $subscribers = \App\Subscriber::whereIn('id', [1,2,3,4])->get();
 
     $newsletter = new \App\Mail\Newsletter($email, $subscribers);
-
-
-    dd($newsletter->fireEmail());
-
-//    $subscriber = \App\Subscriber::first();
-
-//    if ( $subscribers ) {
-//        $recipients = [];
-//        foreach($subscribers as $subscriber) {
-//            $recipients[] = [
-//                'address' => [
-//                    'name' => "$subscriber->first_name $subscriber->last_name",
-//                    'email' => $subscriber->email
-//                ],
-//                'substitution_data' => [
-//                    'id' => $subscriber->id,
-//                    'name' => $subscriber->first_name,
-//                    'unsubscribe_link' => "<a href='http://www.example.com/unsub_handler?email=$subscriber->email' data-msys-unsubscribe='1'>Unsubscribe</a>"
-//                ],
-//            ];
-//        }
-//
-//        $httpClient = new \Http\Adapter\Guzzle6\Client(new \GuzzleHttp\Client());
-//        $sparky = new \SparkPost\SparkPost($httpClient, ['key' => env('SPARKPOST_SECRET')]);
-//
-//        $promise = $sparky->transmissions->post([
-//            'content' => [
-//                'from' => [
-//                    'name' => "Ava Lovelace",
-//                    'email' => "hello@ava.email-newsletter.info",
-//                ],
-//                'subject' => 'SparkPost Test',
-//                'html' => '<html><body><h1>It works, {{name}}!</h1><p>You just sent your very first mailing!</p> <p>{{{ unsubscribe_link }}}</p></body></html>',
-//                'text' => 'Congratulations, {{name}}!! You just sent your very first mailing!',
-//            ],
-//            'recipients' => $recipients,
-//        ]);
-//
-//        $sparky->setOptions(['async' => false]);
-//        try {
-//            $response = $sparky->transmissions->get();
-//
-//            var_dump($response->getStatusCode()."\n");
-//            var_dump($response->getBody());
-//        }
-//        catch (\Exception $e) {
-//            echo $e->getCode()."\n";
-//            echo $e->getMessage()."\n";
-//        }
-//
-//    }
+//    dd($newsletter->fireEmail());
 
 });
 Route::get('unsubscribe', ['as' => 'subscribers.unsubscribe', function() { return 'Unsubscribed'; }]);
