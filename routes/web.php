@@ -15,7 +15,7 @@ Route::get('lab', function() {
             'content' => [
                 'from' => [
                     'name' => "Ava Lovelace",
-                    'email' => "lovelace@ava.email-newsletter.info",
+                    'email' => "hello@ava.email-newsletter.info",
                 ],
                 'subject' => 'SparkPost Test',
                 'html' => '<html><body><h1>Congratulations, {{name}}!</h1><p>You just sent your very first mailing!</p></body></html>',
@@ -38,8 +38,8 @@ Route::get('lab', function() {
         try {
             $response = $sparky->transmissions->get();
 
-            echo $response->getStatusCode()."\n";
-            print_r($response->getBody())."\n";
+            var_dump($response->getStatusCode()."\n");
+            var_dump($response->getBody()."\n");
         }
         catch (\Exception $e) {
             echo $e->getCode()."\n";
