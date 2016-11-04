@@ -23,6 +23,7 @@ class CreateEmailsTable extends Migration
             $table->mediumText('body');
             $table->boolean('is_deleted')->default(0);
             $table->boolean('is_draft')->default(0);
+            $table->boolean('send_success')->default(0);
             $table->dateTime('sent_at')->nullable();
             $table->timestamps();
 
