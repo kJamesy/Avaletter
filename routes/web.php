@@ -1,22 +1,15 @@
 <?php
 Route::get('lab', function() {
-    $when = \Carbon\Carbon::now()->addMinute(1);
-    $email = \App\EmailTemplate::getTemplate(17);
-    $subscribers = \App\Subscriber::whereIn('id', [1,2,3,4])->get();
-    config(['services.sparkpost.options' =>
-        [
-            'open_tracking' => false,
-            'click_tracking' => false,
-            'transactional' => true,
-        ]
-    ]);
-//    dd(config('services.sparkpost'));
-    if ( $subscribers ) {
-        foreach ($subscribers as $subscriber) {
-            $result = \Illuminate\Support\Facades\Mail::to($subscriber)->later($when, new \App\Mail\SparkPost($email, $subscriber));
-            var_dump($result);
-        }
-    }
+//    $when = \Carbon\Carbon::now()->addMinute(1);
+//    $email = \App\EmailTemplate::getTemplate(17);
+//    $subscribers = \App\Subscriber::whereIn('id', [1,2,3,4])->get();
+//
+//    if ( $subscribers ) {
+//        foreach ($subscribers as $subscriber) {
+//            $result = \Illuminate\Support\Facades\Mail::to($subscriber)->later($when, new \App\Mail\SparkPost($email, $subscriber));
+//            var_dump($result);
+//        }
+//    }
 });
 Route::get('unsubscribe', ['as' => 'subscribers.unsubscribe', function() { return 'Unsubscribed'; }]);
 

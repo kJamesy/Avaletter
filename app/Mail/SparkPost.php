@@ -42,7 +42,7 @@ class SparkPost extends Mailable implements ShouldQueue
             'click_tracking' => false,
             'transactional' => true,
         ]);
-        
+
         $content = $this->replaceEmailVariables();
         return $this->view('newsletter.subscriber')->with(compact('content'));
     }
