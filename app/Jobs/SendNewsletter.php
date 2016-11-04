@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Email;
 use App\Mail\Newsletter;
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Queue\SerializesModels;
@@ -41,6 +42,7 @@ class SendNewsletter implements ShouldQueue
 
             if ( is_array($feedback) && array_key_exists('success', $feedback) ) {
                 $this->email->send_success = 1;
+                $this->sent_at = Carbon::now();
                 $this->email->save();
             }
         }
