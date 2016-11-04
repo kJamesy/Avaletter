@@ -36,11 +36,9 @@ class SendNewsletter implements ShouldQueue
      */
     public function handle()
     {
-//        if ( $this->email && count($this->recipients) ) {
-        $template = EmailTemplate::find(17);
-            $newsletter = new Newsletter($template, $this->recipients);
-        file_put_contents(asset('test.html'), $newsletter->fireEmail());
-
-//        }
+        if ( $this->email && count($this->recipients) ) {
+            $newsletter = new Newsletter($this->email, $this->recipients);
+            $newsletter->fireEmail();
+        }
     }
 }
