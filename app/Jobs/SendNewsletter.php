@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Email;
+use App\EmailTemplate;
 use App\Mail\Newsletter;
 use Illuminate\Bus\Queueable;
 use Illuminate\Database\Eloquent\Collection;
@@ -36,7 +37,8 @@ class SendNewsletter implements ShouldQueue
     public function handle()
     {
 //        if ( $this->email && count($this->recipients) ) {
-            $newsletter = new Newsletter($this->email, $this->recipients);
+        $template = EmailTemplate::find(17);
+            $newsletter = new Newsletter($template, $this->recipients);
         file_put_contents(asset('test.html'), $newsletter->fireEmail());
 
 //        }

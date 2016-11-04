@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Email;
 use App\EmailEdition;
-use App\EmailTemplate;
 use App\Jobs\SendNewsletter;
 use App\Mail\Newsletter;
 use App\MailingList;
@@ -111,9 +110,7 @@ class EmailController extends Controller
 
             $subscribers = Subscriber::whereIn('id', [1,2,3,4])->get();
 
-            $template = EmailTemplate::find(17);
-
-            $job = (new SendNewsletter($template, $subscribers)); //->delay(Carbon::now()->addMinutes(2));
+            $job = (new SendNewsletter($email, $subscribers)); //->delay(Carbon::now()->addMinutes(2));
             dispatch($job);
 
 //            $newsletter = new Newsletter($email, $subscribers);
