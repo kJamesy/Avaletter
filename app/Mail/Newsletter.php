@@ -24,11 +24,11 @@ class Newsletter
     public function __construct(Email $email, Collection $recipients)
     {
         $this->sparkSecret = env('SPARKPOST_SECRET');
-        $this->sender = $this->getSender($email->from);
+        $this->sender = $this->buildSender($email->from);
         $this->subject = $email->subject;
-        $this->variables = $this->setEmailVariables();
+        $this->variables = $this->defineEmailVariables();
         $this->body = $this->replaceEmailVariables($email->body);
-        $this->recipients = $this->getRecipientsArray($recipients);
+        $this->recipients = $this->buildRecipientsArray($recipients);
     }
 
     /**
@@ -73,7 +73,7 @@ class Newsletter
      * @param $raw
      * @return array
      */
-    protected function getSender($raw)
+    protected function buildSender($raw)
     {
         $exploded = explode('<', $raw);
 
@@ -88,7 +88,7 @@ class Newsletter
      * Ensure the array key is a property of App\Subscriber; except unsubscribe_link
      * @return array
      */
-    protected function setEmailVariables()
+    protected function defineEmailVariables()
     {
         return [
             'id' => '%id%',
@@ -125,7 +125,7 @@ class Newsletter
      * @param $recipient
      * @return array
      */
-    protected function getRecipientAddress($recipient)
+    protected function buildRecipientAddress($recipient)
     {
         return [
             'name' => "$recipient->first_name $recipient->last_name",
@@ -159,13 +159,13 @@ class Newsletter
      * @param $recipients
      * @return array
      */
-    protected function getRecipientsArray($recipients)
+    protected function buildRecipientsArray($recipients)
     {
         $recipientsArr = [];
 
         foreach($recipients as $recipient) {
             $recipientsArr[] = [
-                'address' => $this->getRecipientAddress($recipient),
+                'address' => $this->buildRecipientAddress($recipient),
                 'substitution_data' => $this->getRecipientSubstitutionData($recipient),
             ];
         }
