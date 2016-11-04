@@ -36,6 +36,10 @@
                     <input type="checkbox" v-model="email.is_draft" v-bind:disabled="disableCheckbox"> Save as Draft
                 </label>
             </div>
+            <div class="form-group">
+                <label>Send At</label>
+                <date-picker :date="email.send_at" :option="datePickerOptions"></date-picker>
+            </div>
             <div class="clearfix">
                 <button type="submit" class="btn btn-default">{{ buttonText }}</button>
                 <router-link v-bind:to="{ name: 'emails.index' }" class="btn btn-default" style="float:right" exact replace>Cancel</router-link>
@@ -45,6 +49,8 @@
 </template>
 
 <script>
+    import DatePicker from 'vue-datepicker';
+
     export default{
         mounted() {
             this.$nextTick(function() {
@@ -52,17 +58,24 @@
                 this.initTinyMce();
                 this.createEmail();
                 this.fireSpecialWatchers();
+                this.timer();
             });
         },
         data() {
             return {
-                email: { mailing_lists: [], subscribers: [], email_edition_id: '', subject: '', body: '', is_draft: true },
+                email: { mailing_lists: [], subscribers: [], email_edition_id: '', subject: '', body: '', is_draft: true, send_at: {time: ''} },
                 validation: { mailing_lists: '', subscribers: '', email_edition_id: '', subject: '', body: '' },
                 mLists: [],
                 subscribers: [],
                 emailEditions: [],
                 disableCheckbox: true,
                 buttonText: 'Save Draft',
+                datePickerOptions: {
+                    type: 'min',
+                    week: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
+                    month: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+                    format: 'YYYY-MM-DD HH:mm'
+                }
             }
         },
         computed: {
@@ -123,7 +136,7 @@
                 this.$set(this, 'validation', { mailing_lists: '', subscribers: '', email_edition_id: '', subject: '', body: '' });
             },
             clearEmail() {
-                this.$set(this, 'email', { mailing_lists: [], subscribers: [], email_edition_id: '', subject: '', body: '', is_draft: true });
+                this.$set(this, 'email', { mailing_lists: [], subscribers: [], email_edition_id: '', subject: '', body: '', is_draft: true, send_at: {time: ''} });
             },
             initTinyMce() {
                 var vm = this;
@@ -156,6 +169,13 @@
                             this.buttonText = ( newVal && ! this.email.is_draft ) ? 'Send Now' : 'Save Draft';
                         }
                 )
+            },
+            timer() {
+                var vm = this;
+                _.delay(function () {
+                    vm.email.send_at.time = moment().add(5, 'minutes').format('YYYY-MM-DD HH:mm');
+                    vm.timer();
+                }, 1000);
             }
         },
         watch: {
@@ -165,6 +185,9 @@
             'buttonText'(newVal) {
                 this.email.is_draft = (newVal == 'Save Draft' );
             }
+        },
+        components: {
+            DatePicker
         }
 
     }
