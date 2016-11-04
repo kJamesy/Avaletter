@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Email;
 use App\EmailEdition;
 use App\Jobs\SendNewsletter;
+use App\Mail\Newsletter;
 use App\MailingList;
 use App\Subscriber;
 use App\User;
@@ -109,8 +110,11 @@ class EmailController extends Controller
 
             $subscribers = Subscriber::whereIn('id', [1,2,3,4])->get();
 
-            $job = (new SendNewsletter($email, $subscribers))->delay(Carbon::now()->addMinutes(2));
-            dispatch($job);
+//            $job = (new SendNewsletter($email, $subscribers))->delay(Carbon::now()->addMinutes(2));
+//            dispatch($job);
+
+            $newsletter = new Newsletter($email, $subscribers);
+            $newsletter->fireEmail();
 
             return $email;
         }
