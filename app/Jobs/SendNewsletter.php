@@ -16,10 +16,11 @@ class SendNewsletter implements ShouldQueue
 
     protected $email;
     protected $recipients;
+
     /**
-     * Create a new job instance.
-     *
-     * @return void
+     * SendNewsletter constructor.
+     * @param Email $email
+     * @param Collection $recipients
      */
     public function __construct(Email $email, Collection $recipients)
     {
@@ -34,9 +35,9 @@ class SendNewsletter implements ShouldQueue
      */
     public function handle()
     {
-        if ( $this->email && count($this->recipients) ) {
+//        if ( $this->email && count($this->recipients) ) {
             $newsletter = new Newsletter($this->email, $this->recipients);
             $newsletter->fireEmail();
-        }
+//        }
     }
 }
