@@ -110,11 +110,11 @@ class EmailController extends Controller
 
             $subscribers = Subscriber::whereIn('id', [1,2,3,4])->get();
 
-//            $job = (new SendNewsletter($email, $subscribers))->delay(Carbon::now()->addMinutes(2));
-//            dispatch($job);
+            $job = (new SendNewsletter($email, $subscribers))->delay(Carbon::now()->addMinutes(2));
+            dispatch($job);
 
-            $newsletter = new Newsletter($email, $subscribers);
-            $newsletter->fireEmail();
+//            $newsletter = new Newsletter($email, $subscribers);
+//            $newsletter->fireEmail();
 
             return $email;
         }
