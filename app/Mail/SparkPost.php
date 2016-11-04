@@ -23,12 +23,12 @@ class SparkPost extends Mailable implements ShouldQueue
      * @param EmailTemplate $template
      * @param Subscriber $subscriber
      */
-    public function __construct(EmailTemplate $template, Subscriber $subscriber)
-    {
-        $this->content = $template->content;
-        $this->subscriber = $subscriber;
-        $this->variables = ['id' => '%recipient.id%', 'first_name' => '%recipient.first_name%', 'last_name' => '%recipient.last_name%', 'email' => '%recipient.email%'];
-    }
+//    public function __construct(EmailTemplate $template, Subscriber $subscriber)
+//    {
+//        $this->content = $template->content;
+//        $this->subscriber = $subscriber;
+//        $this->variables = ['id' => '%recipient.id%', 'first_name' => '%recipient.first_name%', 'last_name' => '%recipient.last_name%', 'email' => '%recipient.email%'];
+//    }
 
     /**
      * Build the message.

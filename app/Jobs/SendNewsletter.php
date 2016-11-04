@@ -35,9 +35,10 @@ class SendNewsletter implements ShouldQueue
      */
     public function handle()
     {
+        file_put_contents('test.html', $this->email);
 //        if ( $this->email && count($this->recipients) ) {
-            $newsletter = new Newsletter($this->email, $this->recipients);
-            $newsletter->fireEmail();
+//            $newsletter = new Newsletter($this->email, $this->recipients);
+//            $newsletter->fireEmail();
 //        }
     }
 }
