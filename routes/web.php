@@ -1,6 +1,7 @@
 <?php
-Route::get('lab', function() {
-    var_dump(\App\Email::search('draft'));
+Route::get('lab/{id}', function($id) {
+    $response = \App\SparkyResponse::find($id);
+    var_dump($response);
 });
 Route::get('unsubscribe', ['as' => 'subscribers.unsubscribe', function() { return 'Unsubscribed'; }]);
 
