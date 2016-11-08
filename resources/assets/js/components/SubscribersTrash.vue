@@ -1,7 +1,7 @@
 <template>
     <div class="subscribers-trash" v-if="successfulFetch" v-cloak>
         <div class="clearfix">
-            <h3 style="display: block;">Subscribers in Trash</h3>
+            <h3 style="display: block;">Bin</h3>
             <form v-if="searching" v-on:submit.prevent="doSearch">
                 <input type="text" v-model.trim="search" placeholder="Search" />
                 &nbsp; <a v-on:click.prevent="cancelSearch" href="" title="Cancel Search" v-if="searching"><i class="fa fa-ban"></i></a>

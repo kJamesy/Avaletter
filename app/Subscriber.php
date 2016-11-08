@@ -131,4 +131,32 @@ class Subscriber extends Model
     {
         return static::search($search)->where('is_deleted', $trash)->paginate($paginate);
     }
+
+    /**
+     * Fetch subscribers by ids who can be emailed
+     * @param $ids
+     * @param $returnIds
+     * @return mixed
+     */
+    public static function getEmailableSubscibersByIds($ids, $returnIds = true)
+    {
+        return $returnIds
+            ? static::where('is_deleted', 0)->where('active', 1)->whereIn('id', (array) $ids)->pluck('id')
+            : static::where('is_deleted', 0)->where('active', 1)->whereIn('id', (array) $ids)->get();
+    }
+
+    /**
+     * Fetch subscribers by mailing list ids except given subscribers ids who can be emailed
+     * @param $mListIds
+     * @param $except
+     * @return mixed
+     */
+    public static function getEmailableSubscribersByMLists($mListIds, $except)
+    {
+        return static::whereHas('mailing_lists', function($query) use($mListIds) {
+            $query->whereIn('mailing_lists.id', (array) $mListIds);
+        })->where('subscribers.is_deleted', 0)->where('subscribers.active', 1)->whereNotIn('subscribers.id', (array) $except)->get();
+    }
+
+
 }

@@ -48,34 +48,60 @@ class Email extends Model
     /**
      * Get specified email
      * @param $id
-     * @return \Illuminate\Database\Eloquent\Collection|Model|null|static|static[]
+     * @param int $deleted
+     * @return mixed
      */
-    public static function getEmail($id)
+    public static function getEmail($id, $deleted = 0)
     {
-        return static::with('email_edition')->with('user')->find($id);
+        return static::with('email_edition')->with('user')->where('is_deleted', $deleted)->where('is_draft', 0)->find($id);
+    }
+
+    /**
+     * Get specified email draft
+     * @param $id
+     * @param int $deleted
+     * @return mixed
+     */
+    public static function getEmailDraft($id, $deleted = 0)
+    {
+        return static::with('email_edition')->with('user')->where('is_deleted', $deleted)->where('is_draft', 1)->find($id);
     }
 
     /**
      * Get emails
+     * @param int $draft
+     * @param int $deleted
      * @param string $orderBy
      * @param string $order
      * @param int $paginate
      * @return mixed
      */
-    public static function getEmails($orderBy = 'created_at', $order = 'desc', $paginate = 1000)
+    public static function getEmails($draft = 0, $deleted = 0, $orderBy = 'created_at', $order = 'desc', $paginate = 1000)
     {
-        return static::with('email_edition')->with('user')->orderBy($orderBy, $order)->paginate($paginate);
+        return static::with('email_edition')->with('user')->where('is_draft', $draft)->where('is_deleted', $deleted)->orderBy($orderBy, $order)->paginate($paginate);
     }
 
     /**
-     * Get search results
+     * Get search results - we need a more complex 'where' here but scout can't help us. So we will need to do this in two steps
      * @param $search
-     * @param int $paginate
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     * @param int $draft
+     * @return \Illuminate\Database\Eloquent\Collection
      */
-    public static function getSearchResults($search, $paginate = 1000)
+    public static function getSearchResults($search, $draft = 0)
     {
-        return static::search($search)->paginate($paginate);
+        return static::search($search)->where('is_draft', $draft)->get();
+    }
+
+    /**
+     * Step two of search - fetch results from the database
+     * @param array $ids
+     * @param int $deleted
+     * @param int $paginate
+     * @return mixed
+     */
+    public static function fetchSearchedResults($ids = [], $deleted = 0, $paginate = 1000)
+    {
+        return static::with('email_edition')->with('user')->where('is_deleted', $deleted)->whereIn('id', (array) $ids)->paginate($paginate);
     }
 
 }

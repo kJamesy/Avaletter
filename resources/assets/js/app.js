@@ -104,9 +104,12 @@ if ( $('#app-email-editions').length ) {
  * Emails
  */
 import Emails from  './components/Emails.vue';
-import EmailsList from './components/EmailsList.vue';
+import EmailsSent from './components/EmailsSent.vue';
+import EmailsDrafts from './components/EmailsDrafts.vue';
 import EmailsNew from  './components/EmailsNew.vue';
-// import EmailsEdit from './components/EmailsEdit.vue';
+import EmailsEdit from './components/EmailsEdit.vue';
+import EmailsForward from './components/EmailsForward.vue';
+import EmailsTrash from './components/EmailsTrash.vue';
 
 if ( $('#app-emails').length ) {
     var emailsRouter = new VueRouter({
@@ -114,9 +117,12 @@ if ( $('#app-emails').length ) {
         base: emailsLinks.baseUri,
         linkActiveClass: 'active',
         routes: [
-            { path: '/all', name: 'emails.index', component: EmailsList },
-            // { path: '/:id(\\d+)/edit', name: 'emails.edit', component: EmailsEdit },
+            { path: '/sent', name: 'emails.index', component: EmailsSent },
+            { path: '/drafts', name: 'emails.drafts', component: EmailsDrafts },
+            { path: '/:id(\\d+)/edit', name: 'emails.edit', component: EmailsEdit },
+            { path: '/:id(\\d+)/forward', name: 'emails.forward', component: EmailsForward },
             { path: '/new', name: 'emails.new', component: EmailsNew },
+            { path: '/trash', name: 'emails.trash', component: EmailsTrash },
             { path: '*', redirect: { name: 'emails.index' } }
         ]
     });

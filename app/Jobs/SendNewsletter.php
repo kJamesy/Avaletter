@@ -43,8 +43,13 @@ class SendNewsletter implements ShouldQueue
             if ( is_array($feedback) && array_key_exists('success', $feedback) ) {
                 $this->email->send_success = 1;
                 $this->email->sent_at = Carbon::now();
-                $this->email->save();
             }
+            else {
+                $this->email->send_success = 0;
+                $this->email->sent_at = null;
+            }
+
+            $this->email->save();
         }
     }
 }

@@ -3,7 +3,7 @@
         <router-link v-bind:to="{ name: 'subscribers.index' }" exact>All Subscribers</router-link> |
         <router-link v-bind:to="{ name: 'subscribers.new' }">New Subscriber</router-link> |
         <router-link v-bind:to="{ name: 'subscribers.import' }">Batch Import Subscribers</router-link> |
-        <router-link v-bind:to="{ name: 'subscribers.trash' }">Trash</router-link>
+        <router-link v-bind:to="{ name: 'subscribers.trash' }">Bin</router-link>
     </div>
 </template>
 <script>

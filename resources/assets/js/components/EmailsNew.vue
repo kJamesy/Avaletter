@@ -1,5 +1,5 @@
 <template>
-    <div class="subscribers-new">
+    <div class="emails-new" v-if="successfulFetch" v-cloak>
         <div class="clearfix">
             <h3>New Email</h3>
         </div>
@@ -36,7 +36,7 @@
                     <input type="checkbox" v-model="email.is_draft" v-bind:disabled="disableCheckbox"> Save as Draft
                 </label>
             </div>
-            <div class="form-group">
+            <div class="form-group" v-if="! email.is_draft">
                 <label>Send At</label>
                 <date-picker :date="email.send_at" :option="datePickerOptions"></date-picker>
             </div>
@@ -55,15 +55,13 @@
         mounted() {
             this.$nextTick(function() {
                 this.resourceUrl = emailsLinks.baseUri;
-                this.initTinyMce();
                 this.createEmail();
                 this.fireSpecialWatchers();
-                this.timer();
             });
         },
         data() {
             return {
-                email: { mailing_lists: [], subscribers: [], email_edition_id: '', subject: '', body: '', is_draft: true, send_at: {time: ''} },
+                email: { mailing_lists: [], subscribers: [], email_edition_id: '', subject: '', body: '', is_draft: true, send_at: {time: moment().add(5, 'minutes').format('YYYY-MM-DD HH:mm')} },
                 validation: { mailing_lists: '', subscribers: '', email_edition_id: '', subject: '', body: '' },
                 mLists: [],
                 subscribers: [],
@@ -75,7 +73,8 @@
                     week: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
                     month: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
                     format: 'YYYY-MM-DD HH:mm'
-                }
+                },
+                successfulFetch: false,
             }
         },
         computed: {
@@ -97,11 +96,14 @@
 
                 vm.$http.get(vm.resourceUrl + '/create').then(function(response) {
                     if ( response.data ) {
-                        this.mLists = response.data.mailing_lists ? response.data.mailing_lists : [];
-                        this.subscribers = response.data.subscribers ? response.data.subscribers : [];
-                        this.emailEditions = response.data.email_editions ? response.data.email_editions : [];
+                        vm.mLists = response.data.mailing_lists ? response.data.mailing_lists : [];
+                        vm.subscribers = response.data.subscribers ? response.data.subscribers : [];
+                        vm.emailEditions = response.data.email_editions ? response.data.email_editions : [];
                     }
+
+                    vm.initTinyMce();
                     progress.finish();
+                    vm.successfulFetch = true;
                 }, function(error) {
                     swal('An Error Occurred', 'Please refresh the page and try again.', 'error');
                     progress.fail();
@@ -114,11 +116,10 @@
                 vm.clearValidationErrors();
 
                 vm.$http.post(vm.resourceUrl, vm.email).then(function(response) {
-                    swal({ title: "Success", text: 'Email created', type: 'success', animation: 'slide-from-bottom', timer: 3000 });
-                    vm.clearEmail();
-                    vm.initTinyMce();
-
                     progress.finish();
+                    swal({ title: "Success", text: response.data.message, type: 'success', animation: 'slide-from-bottom'}, function() {
+                        vm.$router.replace({ name: 'emails.index' });
+                    });
                 }, function(error) {
                     if ( error.status && error.status == 422 && error.data ) {
                         swal({title: "An Error Occurred", text: 'Please check the highlighted fields and try again', type: 'error', animation: 'slide-from-top', timer: 3000});
@@ -166,7 +167,7 @@
                             return this.email.subscribers.length + this.email.mailing_lists.length;
                         }, function(newVal) {
                             this.disableCheckbox = newVal ? false : true;
-                            this.buttonText = ( newVal && ! this.email.is_draft ) ? 'Send Now' : 'Save Draft';
+                            this.buttonText = ( newVal && ! this.email.is_draft ) ? 'Send' : 'Save Draft';
                         }
                 )
             },
@@ -180,7 +181,7 @@
         },
         watch: {
             'email.is_draft'(newVal) {
-                this.buttonText = newVal ? 'Save Draft' : 'Send Now';
+                this.buttonText = newVal ? 'Save Draft' : 'Send';
             },
             'buttonText'(newVal) {
                 this.email.is_draft = (newVal == 'Save Draft' );

@@ -137,7 +137,7 @@ class EmailTemplateController extends Controller
     }
 
     /**
-     * Perform specified action on provided resource
+     * Perform specified action on provided resources
      * @param Request $request
      * @param $update
      * @return \Illuminate\Http\JsonResponse
@@ -186,7 +186,6 @@ class EmailTemplateController extends Controller
         else
             return response()->json(['error' => 'Email template does not exist'], 404);
     }
-
 
     /**
      * Export to PDF

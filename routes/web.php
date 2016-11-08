@@ -1,15 +1,6 @@
 <?php
 Route::get('lab', function() {
-//    $when = \Carbon\Carbon::now()->addMinute(1);
-//    $email = \App\EmailTemplate::getTemplate(17);
-//    $subscribers = \App\Subscriber::whereIn('id', [1,2,3,4])->get();
-//
-//    if ( $subscribers ) {
-//        foreach ($subscribers as $subscriber) {
-//            $result = \Illuminate\Support\Facades\Mail::to($subscriber)->later($when, new \App\Mail\SparkPost($email, $subscriber));
-//            var_dump($result);
-//        }
-//    }
+    var_dump(\App\Email::search('draft'));
 });
 Route::get('unsubscribe', ['as' => 'subscribers.unsubscribe', function() { return 'Unsubscribed'; }]);
 
@@ -20,6 +11,8 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::get('email-templates/{id}/display', ['as' => 'email-templates.display', 'uses' => 'EmailTemplateController@externalDisplay']);
+Route::get('emails/{id}/display', ['as' => 'emails.display', 'uses' => 'EmailController@externalDisplay']);
+
 Route::group(['middleware' => 'auth'], function () {
     if ( ! request()->ajax() ) {
         Route::get('subscribers/export', 'SubscriberController@export');
@@ -27,6 +20,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('email-templates/export', 'EmailTemplateController@export');
         Route::get('email-templates/{vue?}', 'EmailTemplateController@index')->where('vue', '[\/\w\.-]*');
         Route::get('email-editions/{vue?}', 'EmailEditionController@index')->where('vue', '[\/\w\.-]*');
+        Route::get('emails/export', 'EmailController@export');
         Route::get('emails/{vue?}', 'EmailController@index')->where('vue', '[\/\w\.-]*');
     }
 });

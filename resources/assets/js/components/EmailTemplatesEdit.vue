@@ -1,5 +1,5 @@
 <template>
-    <div class="subscribers-edit">
+    <div class="subscribers-edit" v-if="successfulFetch" v-cloak>
         <div class="clearfix">
             <h3>Edit Email Template</h3>
         </div>
@@ -35,7 +35,8 @@
             return {
                 id: this.$route.params.id,
                 emailTemplate: {name: '', content: ''},
-                validation: {name: '', content: ''}
+                validation: {name: '', content: ''},
+                successfulFetch: false,
             }
         },
         methods: {
@@ -44,14 +45,15 @@
                 var progress = vm.$Progress;
                 progress.start();
 
-                vm.$http.get(vm.resourceUrl + '/' + this.id).then(function(response) {
+                vm.$http.get(vm.resourceUrl + '/' + vm.id).then(function(response) {
                     if (response.data) {
                         if ( response.data.email_template ) {
                             vm.emailTemplate.name = response.data.email_template.name;
                             vm.emailTemplate.content = response.data.email_template.content;
 
-                            this.initTinyMce();
+                            vm.initTinyMce();
                             progress.finish();
+                            vm.successfulFetch = true;
                         }
                         else {
                             progress.fail();
