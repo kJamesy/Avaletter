@@ -25,7 +25,7 @@ class EmailController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth');
+        $this->middleware('auth', ['except' => ['externalDisplay']]);
         $this->rules = Email::$rules;
         $this->paginate = 25;
         $this->orderByFields = ['subject', 'from', 'sent_at', 'created_at', 'updated_at'];
