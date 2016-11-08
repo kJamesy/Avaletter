@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 use App\Email;
+use App\SparkyResponse;
 use GuzzleHttp\Client;
 use Http\Adapter\Guzzle6\Client as GuzzleAdapter;
 use Illuminate\Database\Eloquent\Collection;
@@ -45,6 +46,10 @@ class Newsletter
 
         try {
             $response = $sparky->transmissions->get();
+            $sparkyResponse = new SparkyResponse();
+            $sparkyResponse->body = $response;
+            $sparkyResponse->save();
+            
             return ['success' => $response->getStatusCode()];
         }
         catch (\Exception $e) {
