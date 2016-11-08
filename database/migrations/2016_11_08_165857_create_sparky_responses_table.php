@@ -17,6 +17,7 @@ class CreateSparkyResponsesTable extends Migration
         {
             $table->increments('id');
             $table->mediumText('body');
+            $table->timestamps();
         });
     }
 
