@@ -62,7 +62,7 @@ class Newsletter
     public function getSparkyContent()
     {
         return [
-            'campaign_id' => $this->emailId,
+            'campaign_id' => "$this->emailId",
             'content' => [
                 'from' => $this->sender,
                 'subject' => $this->subject,
