@@ -46,10 +46,11 @@ class Newsletter
 
         try {
             $response = $sparky->transmissions->get();
+            
             $sparkyResponse = new SparkyResponse();
             $sparkyResponse->body = $response;
             $sparkyResponse->save();
-            
+
             return ['success' => $response->getStatusCode()];
         }
         catch (\Exception $e) {
