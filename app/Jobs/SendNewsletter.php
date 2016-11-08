@@ -43,7 +43,7 @@ class SendNewsletter implements ShouldQueue
 
             if ( is_array($feedback) && array_key_exists('success', $feedback) ) {
                 $sparkyResponse = new SparkyResponse();
-                $sparkyResponse->body = json_encode($feedback['success']);
+                $sparkyResponse->body = json_encode( (array) $feedback['success']);
                 $sparkyResponse->save();
 
                 $this->email->send_success = 1;

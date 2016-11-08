@@ -28,6 +28,7 @@ class Newsletter
         $this->sender = $this->buildSender($email->from);
         $this->subject = $email->subject;
         $this->variables = $this->defineEmailVariables();
+        $this->emailId = $email->id;
         $this->body = $this->replaceEmailVariables($email->body);
         $this->recipients = $this->buildRecipientsArray($recipients);
     }
@@ -61,6 +62,7 @@ class Newsletter
     public function getSparkyContent()
     {
         return [
+            'campaign_id' => $this->emailId,
             'content' => [
                 'from' => $this->sender,
                 'subject' => $this->subject,
