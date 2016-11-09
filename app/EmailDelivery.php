@@ -3,9 +3,12 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Scout\Searchable;
 
 class EmailDelivery extends Model
 {
+    use Searchable;
+
     protected $table = 'email_deliveries';
 
     /**

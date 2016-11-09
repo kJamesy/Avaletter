@@ -3,9 +3,12 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Scout\Searchable;
 
 class EmailOpen extends Model
 {
+    use Searchable;
+
     protected $table = 'email_opens';
 
     /**

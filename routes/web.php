@@ -1,5 +1,6 @@
 <?php
-Route::get('lab/{id}', function($id) {
+Route::get('lab', function() {
+
 
 });
 
@@ -23,6 +24,20 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('email-editions/{vue?}', 'EmailEditionController@index')->where('vue', '[\/\w\.-]*');
         Route::get('emails/export', 'EmailController@export');
         Route::get('emails/{vue?}', 'EmailController@index')->where('vue', '[\/\w\.-]*');
+
+        Route::get('scout-reindex', function() {
+            \App\Email::makeAllSearchable(); //::searchable();
+            \App\EmailClick::makeAllSearchable();
+            \App\EmailDelivery::makeAllSearchable();
+            \App\EmailEdition::makeAllSearchable();
+            \App\EmailInjection::makeAllSearchable();
+            \App\EmailOpen::makeAllSearchable();
+            \App\EmailTemplate::makeAllSearchable();
+            \App\MailingList::makeAllSearchable();
+            \App\Subscriber::makeAllSearchable();
+
+            var_dump('All are now indexed!');
+        });
     }
 });
 
