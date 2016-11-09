@@ -17,4 +17,13 @@ class EmailDelivery extends Model
         return $this->belongsTo('App\EmailInjection');
     }
 
+    /**
+     * Find an email delivery record by injection id
+     * @param $injectionId
+     * @return mixed
+     */
+    public static function findDeliveryByInjectionId($injectionId)
+    {
+        return static::where('email_injection_id', $injectionId)->first();
+    }
 }

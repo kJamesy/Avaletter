@@ -167,5 +167,14 @@ class Subscriber extends Model
         })->where('subscribers.is_deleted', 0)->where('subscribers.active', 1)->whereNotIn('subscribers.id', (array) $except)->get();
     }
 
+    /**
+     * Get Subscriber by email
+     * @param $email
+     * @return mixed
+     */
+    public static function getSubscriberByEmail($email)
+    {
+        return static::where('email', $email)->first();
+    }
 
 }

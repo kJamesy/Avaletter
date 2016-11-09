@@ -18,11 +18,12 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:api');
 
 Route::post('sparkpost/webhooks', function (Request $request) {
-    $feedback = json_encode($request->all());
 
     $sparky = new \App\SparkyResponse();
-    $sparky->body = $feedback;
+    $sparky->body = json_encode($request->all());
     $sparky->save();
 
-    return response()->json(['message' => 'It\'s working!'], 200);
+    dispatch(new \App\Jobs\HandleSparkPostResponse($sparky));
+
+    return response()->json(['message' => 'We\'ll take it from here, thank you.'], 200);
 });

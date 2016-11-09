@@ -16,4 +16,16 @@ class EmailClick extends Model
     {
         return $this->belongsTo('App\EmailInjection');
     }
+
+    /**
+     * Find an email click record by injection id and target_link
+     * @param $injectionId
+     * @param $target_link
+     * @return mixed
+     */
+    public static function findClick($injectionId, $target_link)
+    {
+        return static::where('email_injection_id', $injectionId)->where('target_link', $target_link)->first();
+    }
+
 }

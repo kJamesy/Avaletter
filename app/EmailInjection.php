@@ -53,4 +53,16 @@ class EmailInjection extends Model
         return $this->hasMany('App\EmailClick');
     }
 
+
+    /**
+     * Find email injection by specified parameters
+     * @param $emailId
+     * @param $subscriberId
+     * @return mixed
+     */
+    public static function getEmailInjection($emailId, $subscriberId)
+    {
+        return static::where('email_id', $emailId)->where('subscriber_id', $subscriberId)->first();
+    }
+
 }

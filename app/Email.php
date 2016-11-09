@@ -113,4 +113,14 @@ class Email extends Model
         return static::with('email_edition')->with('user')->where('is_deleted', $deleted)->whereIn('id', (array) $ids)->paginate($paginate);
     }
 
+    /**
+     * Get email by id
+     * @param $id
+     * @return mixed
+     */
+    public static function getEmailById($id)
+    {
+        return static::find($id);
+    }
+
 }

@@ -16,4 +16,16 @@ class EmailOpen extends Model
     {
         return $this->belongsTo('App\EmailInjection');
     }
+
+    /**
+     * Find an email open record by injection id
+     * @param $injectionId
+     * @return mixed
+     */
+    public static function findOpenByInjectionId($injectionId)
+    {
+        return static::where('email_injection_id', $injectionId)->first();
+    }
+
+
 }
