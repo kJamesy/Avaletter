@@ -4,7 +4,6 @@ namespace App\Jobs;
 
 use App\Email;
 use App\Mail\Newsletter;
-use App\SparkyResponse;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Database\Eloquent\Collection;

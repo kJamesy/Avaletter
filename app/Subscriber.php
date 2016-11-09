@@ -43,6 +43,15 @@ class Subscriber extends Model
     }
 
     /**
+     * One to Many EmailInjection relationship
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function email_injections()
+    {
+        return $this->hasMany('App\EmailInjection');
+    }
+
+    /**
      * Find specified active subscriber
      * @param $id
      * @return \Illuminate\Database\Eloquent\Collection|Model|null|static|static[]

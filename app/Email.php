@@ -46,6 +46,15 @@ class Email extends Model
     }
 
     /**
+     * One to Many EmailInjection relationship
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function email_injections()
+    {
+        return $this->hasMany('App\EmailInjection');
+    }
+
+    /**
      * Get specified email
      * @param $id
      * @param int $deleted
