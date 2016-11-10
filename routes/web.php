@@ -1,7 +1,6 @@
 <?php
 Route::get('lab', function() {
-
-
+    var_dump(\Faker\Factory::create()->url);
 });
 
 Route::get('unsubscribe', ['as' => 'subscribers.unsubscribe', function() { return 'Unsubscribed'; }]);
