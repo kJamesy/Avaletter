@@ -36,7 +36,7 @@ Route::group(['middleware' => 'auth'], function () {
             \App\MailingList::get()->searchable();
             \App\Subscriber::get()->searchable();
 
-            var_dump('All are now indexed!');
+            dd('All indexed!');
         });
     }
 });

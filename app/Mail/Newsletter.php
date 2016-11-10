@@ -4,6 +4,7 @@ namespace App\Mail;
 
 use App\Email;
 use GuzzleHttp\Client;
+use Html2Text\Html2Text;
 use Http\Adapter\Guzzle6\Client as GuzzleAdapter;
 use Illuminate\Database\Eloquent\Collection;
 use SparkPost\SparkPost;
@@ -61,12 +62,17 @@ class Newsletter
      */
     public function getSparkyContent()
     {
+        $html = "<html><body>$this->body</body></html>";
+        $html2Text = new Html2Text($html);
+        $text = $html2Text->getText();
+
         return [
             'campaign_id' => "$this->emailId",
             'content' => [
                 'from' => $this->sender,
                 'subject' => $this->subject,
-                'html' => "<html><body>$this->body</body></html>",
+                'html' => $html,
+                'text' => $text
             ],
             'recipients' => $this->recipients,
         ];
