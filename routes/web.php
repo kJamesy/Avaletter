@@ -26,15 +26,15 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('emails/{vue?}', 'EmailController@index')->where('vue', '[\/\w\.-]*');
 
         Route::get('scout-reindex', function() {
-            \App\Email::searchable(); //::searchable();
-            \App\EmailClick::searchable();
-            \App\EmailDelivery::searchable();
-            \App\EmailEdition::searchable();
-            \App\EmailInjection::searchable();
-            \App\EmailOpen::searchable();
-            \App\EmailTemplate::searchable();
-            \App\MailingList::searchable();
-            \App\Subscriber::searchable();
+            \App\Email::get()->searchable();
+            \App\EmailClick::get()->searchable();
+            \App\EmailDelivery::get()->searchable();
+            \App\EmailEdition::get()->searchable();
+            \App\EmailInjection::get()->searchable();
+            \App\EmailOpen::get()->searchable();
+            \App\EmailTemplate::get()->searchable();
+            \App\MailingList::get()->searchable();
+            \App\Subscriber::get()->searchable();
 
             var_dump('All are now indexed!');
         });
