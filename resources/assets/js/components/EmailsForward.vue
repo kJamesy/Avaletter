@@ -75,7 +75,7 @@
                     month: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
                     format: 'YYYY-MM-DD HH:mm'
                 },
-                successfulFetch: false,
+                successfulFetch: false
             }
         },
         computed: {

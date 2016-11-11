@@ -35,7 +35,7 @@
                     <th>Sent <button v-on:click="changeSort('sent_at')"><i v-bind:class="'fa ' + getSortIcon('sent_at')"></i></button></th>
                     <th>Created <button v-on:click="changeSort('created_at')"><i v-bind:class="'fa ' + getSortIcon('created_at')"></i></button></th>
                     <th>Updated <button v-on:click="changeSort('updated_at')"><i v-bind:class="'fa ' + getSortIcon('updated_at')"></i></button></th>
-                    <th colspan="4"></th>
+                    <th colspan="5"></th>
                 </tr>
             </thead>
             <tbody>
@@ -50,6 +50,7 @@
                     <td>{{ email.updated_at | localTime }}</td>
                     <td><a v-on:click.prevent="exportEmail(email.id)" href="" title="PDF"><i class="fa fa-arrow-circle-down"></i></a></td>
                     <td><router-link v-bind:to="{ name: 'emails.forward', params: { id: email.id } }" title="Forward" class="btn btn-default btn-xs"><i class="fa fa-long-arrow-right"></i></router-link></td>
+                    <td><router-link v-bind:to="{ name: 'emails.stats', params: { id: email.id } }" title="Stats" class="btn btn-default btn-xs" v-if="email.send_success"><i class="fa fa-bar-chart"></i></router-link></td>
                     <td></td>
                     <td><i class="fa fa-times btn btn-danger btn-xs" v-on:click="deleteEmail(email)"></i></td>
                 </tr>

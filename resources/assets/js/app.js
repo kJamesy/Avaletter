@@ -6,7 +6,8 @@ Vue.use(VueRouter);
 import VueProgressBar from 'vue-progressbar';
 Vue.use(VueProgressBar, { color: 'rgb(143, 255, 199)', failedColor: 'red', height: '10px'});
 Vue.component('pagination', require('vue-bootstrap-pagination'));
-
+import VueChartist from 'vue-chartist';
+Vue.use(VueChartist);
 /**
  * Mailing Lists
  */
@@ -110,6 +111,7 @@ import EmailsNew from  './components/EmailsNew.vue';
 import EmailsEdit from './components/EmailsEdit.vue';
 import EmailsForward from './components/EmailsForward.vue';
 import EmailsTrash from './components/EmailsTrash.vue';
+import EmailsStats from './components/EmailsStats.vue';
 
 if ( $('#app-emails').length ) {
     var emailsRouter = new VueRouter({
@@ -123,6 +125,7 @@ if ( $('#app-emails').length ) {
             { path: '/:id(\\d+)/forward', name: 'emails.forward', component: EmailsForward },
             { path: '/new', name: 'emails.new', component: EmailsNew },
             { path: '/trash', name: 'emails.trash', component: EmailsTrash },
+            { path: '/:id(\\d+)/stats', name: 'emails.stats', component: EmailsStats },
             { path: '*', redirect: { name: 'emails.index' } }
         ]
     });

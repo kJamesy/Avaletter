@@ -123,4 +123,12 @@ class Email extends Model
         return static::find($id);
     }
 
+    public static function getEmailStats($id)
+    {
+        return static::with('email_edition')
+            ->with('user')
+            ->with('email_injections.email_delivery')
+            ->with('email_injections.email_open')
+            ->where('is_deleted', 0)->where('is_draft', 0)->where('send_success', 1)->whereNotNull('sent_at')->find($id);
+    }
 }

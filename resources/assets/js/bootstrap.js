@@ -54,3 +54,8 @@ require('sweetalert');
  * @type {hooks}
  */
 window.moment = require('moment');
+
+/**
+ * Chartist Plugins
+ */
+require('chartist-plugin-tooltips');

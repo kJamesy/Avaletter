@@ -339,4 +339,19 @@ class EmailController extends Controller
             echo 'No email found';
     }
 
+    /**
+     * Get sent email stats
+     * @param Request $request
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public static function getEmailStats(Request $request, $id)
+    {
+        $email = Email::getEmailStats( (int) $id );
+
+        if ( $email )
+            return response()->json(compact('email'));
+        else
+            return response()->json(['error' => 'Email draft does not exist'], 404);
+    }
 }

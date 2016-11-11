@@ -20,6 +20,8 @@
     "vue-progressbar": "^0.5.2",
     "vue-datepicker": "^1.3.0",
     "vue-bootstrap-pagination": "^2.10.2",
+    "vue-chartist": "^2.0.0",
+    "chartist-plugin-tooltips": "^0.0.17",
     "animate.css": "^3.5.2"
   }
 }

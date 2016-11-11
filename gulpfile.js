@@ -14,12 +14,16 @@ require('laravel-elixir-vue-2');
  */
 
 elixir(function(mix) {
-    mix.sass('app.scss')
+    mix.sass([
+        'app.scss',
+        '_chartist-settings.scss',
+        './node_modules/chartist/dist/scss/chartist.scss'])
         .styles([
             './public/css/app.css',
             './node_modules/sweetalert/dist/sweetalert.css',
             // './node_modules/sweetalert/themes/twitter/twitter.css'
-            './node_modules/animate.css/animate.min.css'
+            './node_modules/animate.css/animate.min.css',
+            './node_modules/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.css'
         ], './public/css/app.css')
         .webpack('app.js');
 });

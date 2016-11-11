@@ -50,6 +50,7 @@ Route::put('email-templates/{option}/quick-edit', 'EmailTemplateController@quick
 Route::resource('email-templates', 'EmailTemplateController');
 Route::resource('email-editions', 'EmailEditionController');
 Route::put('emails/{option}/quick-edit', 'EmailController@quickUpdate');
+Route::get('emails/{id}/stats', 'EmailController@getEmailStats');
 Route::resource('emails', 'EmailController');
 
 
