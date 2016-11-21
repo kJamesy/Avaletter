@@ -39,7 +39,7 @@ class Subscriber extends Model
      */
     public function mailing_lists()
     {
-        return $this->belongsToMany('App\MailingList', 'mailing_list_subscriber', 'subscriber_id', 'mailing_list_id');
+        return $this->belongsToMany(MailingList::class, 'mailing_list_subscriber', 'subscriber_id', 'mailing_list_id');
     }
 
     /**
@@ -48,13 +48,40 @@ class Subscriber extends Model
      */
     public function email_injections()
     {
-        return $this->hasMany('App\EmailInjection');
+        return $this->hasMany(EmailInjection::class);
+    }
+
+    /**
+     * A subscriber has many deliveries through email injections
+     * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
+     */
+    public function email_deliveries()
+    {
+        return $this->hasManyThrough(EmailDelivery::class, EmailInjection::class);
+    }
+
+    /**
+     * A subscriber has many email opens through email injections
+     * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
+     */
+    public function email_opens()
+    {
+        return $this->hasManyThrough(EmailOpen::class, EmailInjection::class);
+    }
+
+    /**
+     * A subscriber has many email clicks through email injections
+     * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
+     */
+    public function email_clicks()
+    {
+        return $this->hasManyThrough(EmailClick::class, EmailInjection::class);
     }
 
     /**
      * Find specified active subscriber
      * @param $id
-     * @return \Illuminate\Database\Eloquent\Collection|Model|null|static|static[]
+     * @return mixed
      */
     public static function getActiveSubscriber($id)
     {
@@ -114,7 +141,7 @@ class Subscriber extends Model
      */
     public static function getEmailableSubscribersList()
     {
-        return static::where('is_deleted', 0)->where('active', 1)->orderBy('first_name')->get();
+        return static::where('is_deleted', 0)->where('active', 1)->orderBy('first_name')->get(['id', 'first_name', 'last_name', 'email']);
     }
 
     /**
@@ -151,7 +178,7 @@ class Subscriber extends Model
     {
         return $returnIds
             ? static::where('is_deleted', 0)->where('active', 1)->whereIn('id', (array) $ids)->pluck('id')
-            : static::where('is_deleted', 0)->where('active', 1)->whereIn('id', (array) $ids)->get();
+            : static::where('is_deleted', 0)->where('active', 1)->whereIn('id', (array) $ids)->get(['id', 'first_name', 'last_name', 'email']);
     }
 
     /**
@@ -164,7 +191,7 @@ class Subscriber extends Model
     {
         return static::whereHas('mailing_lists', function($query) use($mListIds) {
             $query->whereIn('mailing_lists.id', (array) $mListIds);
-        })->where('subscribers.is_deleted', 0)->where('subscribers.active', 1)->whereNotIn('subscribers.id', (array) $except)->get();
+        })->where('subscribers.is_deleted', 0)->where('subscribers.active', 1)->whereNotIn('subscribers.id', (array) $except)->get(['id', 'first_name', 'last_name', 'email']);
     }
 
     /**
@@ -177,4 +204,103 @@ class Subscriber extends Model
         return static::where('email', $email)->first();
     }
 
+    /**
+     * Get injected subscribers for specified email id
+     * @param $emailId
+     * @return mixed
+     */
+    public static function getInjectedSubscribers($emailId)
+    {
+        return static::with(['email_deliveries' => function($query) use ( $emailId ) {
+            $query->whereHas('email_injection', function($q) use ( $emailId ) {
+                $q->where('email_id', $emailId);
+            })->select('email_deliveries.delivered_at');
+        }])->with(['email_opens' => function($query) use ( $emailId ) {
+            $query->whereHas('email_injection', function($q) use ( $emailId ) {
+                $q->where('email_id', $emailId);
+            })->select('email_opens.opened_at');
+        }])->with(['email_clicks' => function($query) use ( $emailId ) {
+            $query->whereHas('email_injection', function($q) use ( $emailId ) {
+                $q->where('email_id', $emailId);
+            })->select('email_clicks.id');
+        }])->whereHas('email_injections', function($q) use ( $emailId ) {
+            $q->where('email_id', $emailId);
+        })->orderBy('subscribers.first_name', 'asc')->paginate(100);
+    }
+
+    /**
+     * Get delivered subscribers for specified email id
+     * @param $emailId
+     * @return mixed
+     */
+    public static function getDeliveredSubscribers($emailId)
+    {
+        return static::with(['email_deliveries' => function($query) use ( $emailId ) {
+            $query->whereHas('email_injection', function($q) use ( $emailId ) {
+                $q->where('email_id', $emailId);
+            })->select('email_deliveries.delivered_at');
+        }])->whereHas('email_injections', function($q) use ( $emailId ) {
+            $q->where('email_id', $emailId);
+        })->whereHas('email_deliveries', function($query) use ( $emailId ) {
+            $query->whereHas('email_injection', function($q) use ( $emailId ) {
+                $q->where('email_id', $emailId);
+            });
+        })->orderBy('subscribers.first_name', 'asc')->paginate(100);
+    }
+
+    /**
+     * Get opened subscribers for specified email id
+     * @param $emailId
+     * @return mixed
+     */
+    public static function getOpenedSubscribers($emailId)
+    {
+        return static::with(['email_opens' => function($query) use ( $emailId ) {
+            $query->whereHas('email_injection', function($q) use ( $emailId ) {
+                $q->where('email_id', $emailId);
+            })->select('email_opens.opened_at');
+        }])->whereHas('email_injections', function($q) use ( $emailId ) {
+            $q->where('email_id', $emailId);
+        })->whereHas('email_opens', function($query) use ( $emailId ) {
+            $query->whereHas('email_injection', function($q) use ( $emailId ) {
+                $q->where('email_id', $emailId);
+            });
+        })->orderBy('subscribers.first_name', 'asc')->paginate(100);
+    }
+
+    /**
+     * Get clicked subscribers for specified email id
+     * @param $injectionIds
+     * @return mixed
+     */
+    public static function getClickedSubscribers($emailId)
+    {
+        return static::with(['email_clicks' => function($query) use ( $emailId ) {
+            $query->whereHas('email_injection', function($q) use ( $emailId ) {
+                $q->where('email_id', $emailId);
+            })->select(['email_clicks.target_link', 'email_clicks.hits']);
+        }])->whereHas('email_injections', function($q) use ( $emailId ) {
+            $q->where('email_id', $emailId);
+        })->whereHas('email_clicks', function($query) use ( $emailId ) {
+            $query->whereHas('email_injection', function($q) use ( $emailId ) {
+                $q->where('email_id', $emailId);
+            });
+        })->orderBy('subscribers.first_name', 'asc')->paginate(100);
+    }
+
+    /**
+     * Get undelivered subscribers for specified email id
+     * @param $emailId
+     * @return mixed
+     */
+    public static function getNotDeliveredSubscribers($emailId)
+    {
+        return static::whereHas('email_injections', function($q) use ( $emailId ) {
+            $q->where('email_id', $emailId);
+        })->whereDoesntHave('email_deliveries', function($query) use ( $emailId ) {
+            $query->whereHas('email_injection', function($q) use ( $emailId ) {
+                $q->where('email_id', $emailId);
+            });
+        })->orderBy('subscribers.first_name', 'asc')->paginate(100);
+    }
 }

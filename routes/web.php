@@ -1,7 +1,11 @@
 <?php
 Route::get('lab', function() {
-    var_dump(\Faker\Factory::create()->url);
+    $stats = \App\Email::getEmailCountriesStats(11, 20);
+
+    var_dump($stats->toArray());
+
 });
+
 
 Route::get('unsubscribe', ['as' => 'subscribers.unsubscribe', function() { return 'Unsubscribed'; }]);
 
@@ -50,7 +54,10 @@ Route::put('email-templates/{option}/quick-edit', 'EmailTemplateController@quick
 Route::resource('email-templates', 'EmailTemplateController');
 Route::resource('email-editions', 'EmailEditionController');
 Route::put('emails/{option}/quick-edit', 'EmailController@quickUpdate');
-Route::get('emails/{id}/stats', 'EmailController@getEmailStats');
+Route::post('emails/{id}/sent-email', 'EmailStatsController@getSentEmail');
+Route::post('emails/{id}/sent-email/recipients', 'EmailStatsController@getSentEmailRecipients');
+Route::post('emails/{id}/sent-email/general-stats', 'EmailStatsController@getSentEmailGeneralStats');
+Route::post('emails/{id}/sent-email/{type}/stats', 'EmailStatsController@getSentEmailStats');
 Route::resource('emails', 'EmailController');
 
 

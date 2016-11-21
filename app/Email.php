@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use Laravel\Scout\Searchable;
 
 class Email extends Model
@@ -33,7 +34,7 @@ class Email extends Model
      */
     public function user()
     {
-        return $this->belongsTo('App\User');
+        return $this->belongsTo(User::class);
     }
 
     /**
@@ -42,7 +43,7 @@ class Email extends Model
      */
     public function email_edition()
     {
-        return $this->belongsTo('App\EmailEdition');
+        return $this->belongsTo(EmailEdition::class);
     }
 
     /**
@@ -51,7 +52,34 @@ class Email extends Model
      */
     public function email_injections()
     {
-        return $this->hasMany('App\EmailInjection');
+        return $this->hasMany(EmailInjection::class);
+    }
+
+    /**
+     * An email has many email deliveries through email injections
+     * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
+     */
+    public function email_deliveries()
+    {
+        return $this->hasManyThrough(EmailDelivery::class, EmailInjection::class);
+    }
+
+    /**
+     * An email has many email opens through email injections
+     * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
+     */
+    public function email_opens()
+    {
+        return $this->hasManyThrough(EmailOpen::class, EmailInjection::class);
+    }
+
+    /**
+     * An email has many email clicks through email injections
+     * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
+     */
+    public function email_clicks()
+    {
+        return $this->hasManyThrough(EmailClick::class, EmailInjection::class);
     }
 
     /**
@@ -62,7 +90,11 @@ class Email extends Model
      */
     public static function getEmail($id, $deleted = 0)
     {
-        return static::with('email_edition')->with('user')->where('is_deleted', $deleted)->where('is_draft', 0)->find($id);
+        return static::with('email_edition:id,edition')
+            ->with('user:id,first_name,last_name')
+            ->where('is_deleted', $deleted)
+            ->where('is_draft', 0)
+            ->find($id);
     }
 
     /**
@@ -73,7 +105,11 @@ class Email extends Model
      */
     public static function getEmailDraft($id, $deleted = 0)
     {
-        return static::with('email_edition')->with('user')->where('is_deleted', $deleted)->where('is_draft', 1)->find($id);
+        return static::with('email_edition:id,edition')
+            ->with('user:id,first_name,last_name')
+            ->where('is_deleted', $deleted)
+            ->where('is_draft', 1)
+            ->find($id);
     }
 
     /**
@@ -87,7 +123,13 @@ class Email extends Model
      */
     public static function getEmails($draft = 0, $deleted = 0, $orderBy = 'created_at', $order = 'desc', $paginate = 1000)
     {
-        return static::with('email_edition')->with('user')->where('is_draft', $draft)->where('is_deleted', $deleted)->orderBy($orderBy, $order)->paginate($paginate);
+        return static::with('email_edition:id,edition')
+            ->with('user:id,first_name,last_name')
+            ->withCount('email_injections')
+            ->where('is_draft', $draft)
+            ->where('is_deleted', $deleted)
+            ->orderBy($orderBy, $order)
+            ->paginate($paginate);
     }
 
     /**
@@ -110,7 +152,12 @@ class Email extends Model
      */
     public static function fetchSearchedResults($ids = [], $deleted = 0, $paginate = 1000)
     {
-        return static::with('email_edition')->with('user')->where('is_deleted', $deleted)->whereIn('id', (array) $ids)->paginate($paginate);
+        return static::with('email_edition:id,edition')
+            ->with('user:id,first_name,last_name')
+            ->withCount('email_injections')
+            ->where('is_deleted', $deleted)
+            ->whereIn('id', (array) $ids)
+            ->paginate($paginate);
     }
 
     /**
@@ -123,12 +170,113 @@ class Email extends Model
         return static::find($id);
     }
 
-    public static function getEmailStats($id)
+    /**
+     * Get the specified sent email
+     * @param $id
+     * @return mixed
+     */
+    public static function getSentEmail($id)
     {
-        return static::with('email_edition')
-            ->with('user')
-            ->with('email_injections.email_delivery')
-            ->with('email_injections.email_open')
-            ->where('is_deleted', 0)->where('is_draft', 0)->where('send_success', 1)->whereNotNull('sent_at')->find($id);
+        return static::with('email_edition:id,edition')
+            ->with('user:id,first_name,last_name')
+            ->withCount('email_injections')
+            ->withCount('email_deliveries')
+            ->withCount('email_opens')
+            ->selectRaw("(SELECT COUNT(DISTINCT `email_injection_id`) FROM `email_clicks` INNER JOIN `email_injections` ON `email_injections`.`id` = `email_clicks`.`email_injection_id` WHERE `emails`.`id` = `email_injections`.`email_id`) AS `email_clicks_count`")
+            ->where('send_success', 1)
+            ->whereNotNull('sent_at')
+            ->find($id);
     }
+
+    /**
+     * Get email with general stats (injection, deliveries, opens)
+     * @param $id
+     * @return mixed
+     */
+    public static function getEmailWithGeneralStats($id)
+    {
+        return static::withCount('email_injections')
+            ->withCount('email_deliveries')
+            ->withCount('email_opens')
+            ->selectRaw("(SELECT COUNT(DISTINCT `email_injection_id`) FROM `email_clicks` INNER JOIN `email_injections` ON `email_injections`.`id` = `email_clicks`.`email_injection_id` WHERE `emails`.`id` = `email_injections`.`email_id`) AS `email_clicks_count`")
+            ->where('is_deleted', 0)
+            ->where('is_draft', 0)
+            ->where('send_success', 1)
+            ->whereNotNull('sent_at')
+            ->find($id);
+    }
+
+    /**
+     * Get email deliveries stats
+     * @param $id
+     * @return mixed
+     */
+    public static function getEmailDeliveriesStats($id)
+    {
+        return static::select('id')
+            ->withCount('email_injections')
+            ->withCount('email_deliveries')
+            ->where('is_deleted', 0)
+            ->where('is_draft', 0)
+            ->where('send_success', 1)
+            ->whereNotNull('sent_at')
+            ->find($id);
+    }
+
+    /**
+     * Get email opens stats
+     * @param $id
+     * @return mixed
+     */
+    public static function getEmailOpensStats($id)
+    {
+        return static::select('id')
+            ->withCount('email_injections')
+            ->withCount('email_opens')
+            ->where('is_deleted', 0)
+            ->where('is_draft', 0)
+            ->where('send_success', 1)
+            ->whereNotNull('sent_at')
+            ->find($id);
+    }
+
+    /**
+     * Get email clicks stats
+     * @param $id
+     * @return mixed
+     */
+    public static function getEmailClicksStats($id)
+    {
+        return static::select('id')
+            ->withCount('email_injections')
+            ->selectRaw("(SELECT COUNT(DISTINCT `email_injection_id`) FROM `email_clicks` INNER JOIN `email_injections` ON `email_injections`.`id` = `email_clicks`.`email_injection_id` WHERE `emails`.`id` = `email_injections`.`email_id`) AS `email_clicks_count`")
+            ->where('is_deleted', 0)
+            ->where('is_draft', 0)
+            ->where('send_success', 1)
+            ->whereNotNull('sent_at')
+            ->find($id);
+    }
+
+    /**
+     * Get email opens countries stats
+     * @param $id
+     * @param int $limit
+     * @return mixed
+     */
+    public static function getEmailCountriesStats($id, $limit = 15)
+    {
+        return static::join('email_injections', 'email_injections.email_id', '=', 'emails.id')
+            ->join('email_opens', 'email_opens.email_injection_id', '=', 'email_injections.id')
+            ->select('email_opens.country AS country', DB::raw('COUNT(email_opens.country) AS country_count'))
+            ->where('emails.id', $id)
+            ->where('is_deleted', 0)
+            ->where('is_draft', 0)
+            ->where('send_success', 1)
+            ->whereNotNull('sent_at')
+            ->groupBy('email_opens.country')
+            ->orderBy('country_count', 'desc')
+            ->limit($limit)
+            ->get();
+    }
+
 }

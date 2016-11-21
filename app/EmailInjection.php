@@ -56,7 +56,6 @@ class EmailInjection extends Model
         return $this->hasMany('App\EmailClick');
     }
 
-
     /**
      * Find email injection by specified parameters
      * @param $emailId

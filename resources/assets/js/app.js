@@ -112,6 +112,7 @@ import EmailsEdit from './components/EmailsEdit.vue';
 import EmailsForward from './components/EmailsForward.vue';
 import EmailsTrash from './components/EmailsTrash.vue';
 import EmailsStats from './components/EmailsStats.vue';
+import EmailsView from './components/EmailsView.vue';
 
 if ( $('#app-emails').length ) {
     var emailsRouter = new VueRouter({
@@ -125,7 +126,8 @@ if ( $('#app-emails').length ) {
             { path: '/:id(\\d+)/forward', name: 'emails.forward', component: EmailsForward },
             { path: '/new', name: 'emails.new', component: EmailsNew },
             { path: '/trash', name: 'emails.trash', component: EmailsTrash },
-            { path: '/:id(\\d+)/stats', name: 'emails.stats', component: EmailsStats },
+            { path: '/:id(\\d+)/sent-email/stats', name: 'emails.stats', component: EmailsStats },
+            { path: '/:id(\\d+)/sent-email', name: 'emails.view', component: EmailsView },
             { path: '*', redirect: { name: 'emails.index' } }
         ]
     });

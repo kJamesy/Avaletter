@@ -28,7 +28,7 @@ class EmailController extends Controller
         $this->middleware('auth', ['except' => ['externalDisplay']]);
         $this->rules = Email::$rules;
         $this->paginate = 25;
-        $this->orderByFields = ['subject', 'from', 'sent_at', 'created_at', 'updated_at'];
+        $this->orderByFields = ['subject', 'from', 'email_injections_count', 'sent_at', 'created_at', 'updated_at'];
         $this->orderCriteria = ['asc', 'desc'];
     }
 
@@ -337,21 +337,5 @@ class EmailController extends Controller
             echo $email->body;
         else
             echo 'No email found';
-    }
-
-    /**
-     * Get sent email stats
-     * @param Request $request
-     * @param $id
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public static function getEmailStats(Request $request, $id)
-    {
-        $email = Email::getEmailStats( (int) $id );
-
-        if ( $email )
-            return response()->json(compact('email'));
-        else
-            return response()->json(['error' => 'Email draft does not exist'], 404);
     }
 }

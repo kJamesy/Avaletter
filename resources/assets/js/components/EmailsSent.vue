@@ -1,5 +1,5 @@
 <template>
-    <div class="emails-sent" v-if="successfulFetch" v-cloak>
+    <div class="emails-sent" v-if="successfulFetch" v-cloak="">
         <div class="clearfix" style="margin: 20px 0;">
             <form v-on:submit.prevent="doSearch">
                 <input type="text" v-model.trim="search" placeholder="Search" />
@@ -24,18 +24,16 @@
             </select>
         </div>
         <div class="clearfix"></div>
-        <table class="table">
+        <table class="table table-striped table-responsive">
             <thead>
                 <tr>
                     <th><input type="checkbox" v-model="selectAll"></th>
                     <th>Subject <button v-on:click="changeSort('subject')"><i v-bind:class="'fa ' + getSortIcon('subject')"></i></button></th>
                     <th>Sender <button v-on:click="changeSort('from')"><i v-bind:class="'fa ' + getSortIcon('from')"></i></button></th>
-                    <th>User</th>
                     <th>Edition</th>
+                    <th>Recipients <button v-on:click="changeSort('email_injections_count')"><i v-bind:class="'fa ' + getSortIcon('email_injections_count')"></i></button></th>
                     <th>Sent <button v-on:click="changeSort('sent_at')"><i v-bind:class="'fa ' + getSortIcon('sent_at')"></i></button></th>
-                    <th>Created <button v-on:click="changeSort('created_at')"><i v-bind:class="'fa ' + getSortIcon('created_at')"></i></button></th>
-                    <th>Updated <button v-on:click="changeSort('updated_at')"><i v-bind:class="'fa ' + getSortIcon('updated_at')"></i></button></th>
-                    <th colspan="5"></th>
+                    <th colspan="6"></th>
                 </tr>
             </thead>
             <tbody>
@@ -43,16 +41,15 @@
                     <td><input type="checkbox" v-model="selected" v-bind:value="email.id"></td>
                     <td>{{ email.subject }}</td>
                     <td>{{ email.from }}</td>
-                    <td>{{ email.user.first_name }} {{ email.user.last_name }}</td>
                     <td>{{ email.email_edition.edition }}</td>
+                    <td>{{ email.email_injections_count }}</td>
                     <td>{{ email.sent_at | localTime }}</td>
-                    <td>{{ email.created_at | localTime }}</td>
-                    <td>{{ email.updated_at | localTime }}</td>
-                    <td><a v-on:click.prevent="exportEmail(email.id)" href="" title="PDF"><i class="fa fa-arrow-circle-down"></i></a></td>
-                    <td><router-link v-bind:to="{ name: 'emails.forward', params: { id: email.id } }" title="Forward" class="btn btn-default btn-xs"><i class="fa fa-long-arrow-right"></i></router-link></td>
+                    <td><router-link v-bind:to="{ name: 'emails.view', params: { id: email.id } }" title="View" class="btn btn-default btn-xs" v-if="email.send_success"><i class="fa fa-envelope-open"></i></router-link></td>
                     <td><router-link v-bind:to="{ name: 'emails.stats', params: { id: email.id } }" title="Stats" class="btn btn-default btn-xs" v-if="email.send_success"><i class="fa fa-bar-chart"></i></router-link></td>
+                    <td><router-link v-bind:to="{ name: 'emails.forward', params: { id: email.id } }" title="Forward" class="btn btn-default btn-xs"><i class="fa fa-long-arrow-right"></i></router-link></td>
+                    <td><a v-on:click.prevent="exportEmail(email.id)" href="" title="PDF" class="btn btn-default btn-xs"><i class="fa fa-arrow-circle-down"></i></a></td>
                     <td></td>
-                    <td><i class="fa fa-times btn btn-danger btn-xs" v-on:click="deleteEmail(email)"></i></td>
+                    <td><a v-on:click.prevent="exportEmail(email.id)" href="" title="PDF" class="btn btn-danger btn-xs" v-on:click="deleteEmail(email)"><i class="fa fa-times"></i></a></td>
                 </tr>
             </tbody>
         </table>
@@ -300,7 +297,7 @@
         },
         filters: {
             localTime(date) {
-                return moment(date + ' Z', 'YYYY-MM-DD HH:mm:ss Z', true).format('D MMM YYYY HH:mm');
+                return date ? moment(date + ' Z', 'YYYY-MM-DD HH:mm:ss Z', true).format('D MMM YYYY HH:mm') : '-';
             }
         }
     }
